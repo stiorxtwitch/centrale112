@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Centrale 112 — Wallonie</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050810;--panel:#0b1120;--panel2:#0f1a2e;--border:#1a2d4a;--border2:#243550;
+  --police:#4f9cf9;--fire:#f05252;--amb:#31c48d;
+  --text:#c8d8ed;--text2:#7a92b0;--accent:#f0b429;
+  --critical:#f05252;--urgent:#f0b429;--minor:#4f9cf9;
+}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+.topbar{background:var(--panel);border-bottom:2px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.logo{width:40px;height:40px;background:var(--critical);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 0 16px rgba(240,82,82,0.5)}
+.title-main{font-size:19px;font-weight:700;letter-spacing:3px;color:#fff}
+.title-sub{font-size:11px;color:var(--text2);letter-spacing:1px}
+.topbar-right{display:flex;align-items:center;gap:20px}
+.inc-live{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.inc-live span{color:var(--critical);font-weight:700;font-size:16px}
+.clock{font-family:'Share Tech Mono',monospace;font-size:24px;color:var(--accent);letter-spacing:2px}
+.badge-online{padding:4px 12px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:1px;background:rgba(49,196,141,.12);color:var(--amb);border:1px solid var(--amb)}
+
+.nav{display:flex;gap:2px;padding:0 16px;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
+.nav-btn{padding:10px 24px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all .2s;font-family:'Rajdhani',sans-serif;display:flex;align-items:center;gap:8px}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-badge{background:var(--critical);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+
+.content{flex:1;overflow:hidden;display:flex;min-height:0}
+.page{display:none;width:100%}
+.page.active{display:flex}
+
+/* MAP */
+#page-map{flex-direction:row}
+#map{flex:1}
+.map-sidebar{width:310px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-section{display:flex;flex-direction:column;border-bottom:1px solid var(--border)}
+.sidebar-section:last-child{flex:1;overflow:hidden}
+.sidebar-title{padding:9px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-list{overflow-y:auto;flex:1}
+.sidebar-item{padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:10px}
+.sidebar-item:hover{background:var(--panel2)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot-police{background:var(--police);box-shadow:0 0 6px var(--police)}
+.dot-fire{background:var(--fire);box-shadow:0 0 6px var(--fire)}
+.dot-amb{background:var(--amb);box-shadow:0 0 6px var(--amb)}
+.dot-critical{background:var(--critical);box-shadow:0 0 8px var(--critical)}
+.dot-urgent{background:var(--urgent);box-shadow:0 0 6px var(--urgent)}
+.dot-minor{background:var(--minor);box-shadow:0 0 6px var(--minor)}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-sub{font-size:11px;color:var(--text2)}
+.us{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.s-available{background:rgba(49,196,141,.15);color:var(--amb)}
+.s-dispatched{background:rgba(240,82,82,.15);color:var(--fire)}
+.s-hs{background:rgba(120,140,160,.15);color:var(--text2)}
+
+/* UNITS */
+#page-units{flex-direction:column;padding:20px;overflow-y:auto;gap:16px}
+.page-header{display:flex;align-items:center;justify-content:space-between}
+.page-title{font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.btn{padding:8px 18px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;text-transform:uppercase;transition:all .2s}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:#ffc947}
+.btn-danger{background:rgba(240,82,82,.15);color:var(--fire);border:1px solid rgba(240,82,82,.3)}
+.btn-danger:hover{background:var(--fire);color:#fff}
+.btn-success{background:rgba(49,196,141,.15);color:var(--amb);border:1px solid rgba(49,196,141,.3)}
+.btn-success:hover{background:var(--amb);color:#000}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--text);color:var(--text)}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{padding:5px 14px;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'Rajdhani',sans-serif;text-transform:uppercase;transition:all .2s}
+.filter-btn:hover{color:var(--text)}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(240,180,41,.08)}
+
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);border-bottom:2px solid var(--border);background:var(--panel2)}
+td{padding:11px 14px;font-size:14px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(255,255,255,.02)}
+.type-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:1px}
+.type-police{background:rgba(79,156,249,.15);color:var(--police)}
+.type-fire{background:rgba(240,82,82,.15);color:var(--fire)}
+.type-amb{background:rgba(49,196,141,.15);color:var(--amb)}
+.action-btns{display:flex;gap:6px;flex-wrap:wrap}
+
+/* INCIDENTS */
+#page-incidents{flex-direction:column;padding:20px;overflow-y:auto;gap:16px}
+.stats-bar{display:flex;gap:14px;flex-wrap:wrap}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 20px;flex:1;min-width:100px}
+.stat-val{font-size:30px;font-weight:700;color:#fff;line-height:1}
+.stat-label{font-size:11px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+.incidents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.inc-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s}
+.inc-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.inc-card.p1-card{border-left:3px solid var(--critical)}
+.inc-card.p2-card{border-left:3px solid var(--urgent)}
+.inc-card.p3-card{border-left:3px solid var(--minor)}
+.inc-hdr{padding:11px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.prio-badge{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.p1{background:var(--critical);color:#fff}
+.p2{background:var(--urgent);color:#000}
+.p3{background:var(--minor);color:#fff}
+.inc-title{font-size:14px;font-weight:700;color:#fff;flex:1}
+.inc-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.is-pending{background:rgba(240,180,41,.15);color:var(--urgent)}
+.is-active{background:rgba(240,82,82,.15);color:var(--fire)}
+.is-closed{background:rgba(120,140,160,.15);color:var(--text2)}
+.inc-body{padding:11px 14px}
+.inc-info{display:flex;gap:6px;align-items:flex-start;font-size:12px;color:var(--text2);margin-bottom:5px}
+.inc-units{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.uc{font-size:11px;padding:2px 8px;border-radius:3px;font-weight:700}
+.uc-police{background:rgba(79,156,249,.15);color:var(--police)}
+.uc-fire{background:rgba(240,82,82,.15);color:var(--fire)}
+.uc-amb{background:rgba(49,196,141,.15);color:var(--amb)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,15,.85);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:8px;width:560px;max-height:82vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.85)}
+.modal-hdr{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:2}
+.modal-title{font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff}
+.modal-close{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;padding:0 4px}
+.modal-close:hover{color:#fff}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--panel)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:9px 12px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-select option{background:var(--panel2)}
+.unit-sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.unit-sel-item{padding:9px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+.unit-sel-item:hover{border-color:var(--text2)}
+.unit-sel-item.selected{border-color:var(--accent);background:rgba(240,180,41,.08)}
+.unit-sel-item.unavailable{opacity:.4;cursor:not-allowed;pointer-events:none}
+.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* NOTIFS */
+.notif-wrap{position:fixed;top:72px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.notif{padding:12px 18px;border-radius:6px;font-size:13px;font-weight:600;min-width:280px;border-left:4px solid;animation:slideIn .3s ease;pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.n-success{background:rgba(49,196,141,.15);border-color:var(--amb);color:var(--amb)}
+.n-error{background:rgba(240,82,82,.15);border-color:var(--fire);color:var(--fire)}
+.n-info{background:rgba(79,156,249,.15);border-color:var(--police);color:var(--police)}
+.n-warn{background:rgba(240,180,41,.15);border-color:var(--accent);color:var(--accent)}
+
+/* MAP popup override */
+.leaflet-popup-content-wrapper{background:var(--panel2);border:1px solid var(--border2);border-radius:6px;color:var(--text);box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.leaflet-popup-tip{background:var(--panel2)}
+.leaflet-popup-content{margin:10px 14px;font-family:'Rajdhani',sans-serif}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,82,82,.7)}50%{box-shadow:0 0 0 10px rgba(240,82,82,0)}}
+.pulse-anim{animation:pulse 1.5s infinite}
+
+.empty-state{padding:20px 14px;text-align:center;color:var(--text2);font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">112</div>
+    <div>
+      <div class="title-main">CENTRALE D'URGENCE</div>
+      <div class="title-sub">PROVINCE DE LUXEMBOURG — WALLONIE</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="inc-live"><span id="live-count">0</span> INCIDENTS ACTIFS</div>
+    <div class="clock" id="clock">00:00:00</div>
+    <div class="badge-online">● EN LIGNE</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" id="nb-map" onclick="showPage('map',this)">▦ CARTE</button>
+  <button class="nav-btn" id="nb-units" onclick="showPage('units',this)">⬡ UNITÉS</button>
+  <button class="nav-btn" id="nb-incidents" onclick="showPage('incidents',this)">⚑ INCIDENTS <span class="nav-badge" id="badge-count">0</span></button>
+</div>
+
+<!-- PAGES -->
+<div class="content">
+
+  <!-- MAP PAGE -->
+  <div class="page active" id="page-map">
+    <div id="map"></div>
+    <div class="map-sidebar">
+      <div class="sidebar-section" style="max-height:260px">
+        <div class="sidebar-title">⚑ INCIDENTS EN COURS</div>
+        <div class="sidebar-list" id="sb-incidents"></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">⬡ UNITÉS</div>
+        <div class="sidebar-list" id="sb-units"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNITS PAGE -->
+  <div class="page" id="page-units">
+    <div class="page-header">
+      <div class="page-title">Gestion des Unités</div>
+      <button class="btn btn-primary" onclick="openModal('modal-add-unit')">+ AJOUTER UNITÉ</button>
+    </div>
+    <div class="filters" id="unit-filters">
+      <button class="filter-btn active" onclick="filterUnits('all',this)">TOUS</button>
+      <button class="filter-btn" onclick="filterUnits('police',this)">POLICE</button>
+      <button class="filter-btn" onclick="filterUnits('fire',this)">POMPIERS</button>
+      <button class="filter-btn" onclick="filterUnits('ambulance',this)">AMBULANCES</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>INDICATIF</th><th>TYPE</th><th>STATUT</th><th>SECTEUR</th><th>INCIDENT</th><th>ACTIONS</th>
+        </tr></thead>
+        <tbody id="units-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INCIDENTS PAGE -->
+  <div class="page" id="page-incidents">
+    <div class="page-header">
+      <div class="page-title">Gestion des Incidents</div>
+      <button class="btn btn-primary" onclick="openCreateIncModal()">+ NOUVEL INCIDENT</button>
+    </div>
+    <div class="stats-bar" id="inc-stats"></div>
+    <div class="incidents-grid" id="inc-grid"></div>
+  </div>
+
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="notif-wrap" id="notif-wrap"></div>
+
+<!-- MODAL: CREATE INCIDENT -->
+<div class="modal-overlay" id="modal-create-incident">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">⚑ Nouvel Incident</span>
+      <button class="modal-close" onclick="closeModal('modal-create-incident')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Type d'incident</label>
+        <select class="form-select" id="f-type">
+          <option>Accident de la route</option><option>Incendie</option>
+          <option>Malaise / Urgence médicale</option><option>Violence / Agression</option>
+          <option>Cambriolage</option><option>Fuite de gaz</option>
+          <option>Inondation</option><option>Personne disparue</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priorité</label>
+        <select class="form-select" id="f-priority">
+          <option value="1">P1 — CRITIQUE (Urgence vitale)</option>
+          <option value="2">P2 — URGENT (Intervention rapide)</option>
+          <option value="3">P3 — NON-URGENT (Faible risque)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adresse / Localisation</label>
+        <input class="form-input" id="f-addr" placeholder="Ex: Route N4, km 47, Bastogne"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Détails de l'incident signalé par le requérant..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assigner des unités disponibles</label>
+        <div class="unit-sel-grid" id="f-units"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-create-incident')">ANNULER</button>
+      <button class="btn btn-primary" onclick="createIncident()">CRÉER ET DISPATCHER</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INCIDENT DETAIL -->
+<div class="modal-overlay" id="modal-inc-detail">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="d-title">Incident</span>
+      <button class="modal-close" onclick="closeModal('modal-inc-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="d-body"></div>
+    <div class="modal-footer" id="d-footer"></div>
+  </div>
+</div>
+
+<!-- MODAL: ADD UNIT -->
+<div class="modal-overlay" id="modal-add-unit">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">+ Ajouter une Unité</span>
+      <button class="modal-close" onclick="closeModal('modal-add-unit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Indicatif radio</label>
+        <input class="form-input" id="u-callsign" placeholder="Ex: P-07, F-04, A-05"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom de l'unité</label>
+        <input class="form-input" id="u-name" placeholder="Ex: Patrouille Bastogne Nord"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="u-type">
+          <option value="police">Police</option>
+          <option value="fire">Pompiers</option>
+          <option value="ambulance">Ambulance / SMUR</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Secteur de départ</label>
+        <select class="form-select" id="u-zone">
+          <option value="bastogne">Bastogne</option>
+          <option value="liege">Liège</option>
+          <option value="namur">Namur</option>
+          <option value="arlon">Arlon</option>
+          <option value="marche">Marche-en-Famenne</option>
+          <option value="dinant">Dinant</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-unit')">ANNULER</button>
+      <button class="btn btn-primary" onclick="addUnit()">AJOUTER L'UNITÉ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ZONES={
+  bastogne:[50.003,5.717],liege:[50.645,5.573],namur:[50.467,4.867],
+  arlon:[49.683,5.816],marche:[50.227,5.347],dinant:[50.261,4.912]
+};
+
+let units=[
+  {id:'P-01',name:'Patrouille Bastogne Alpha',type:'police',status:'available',zone:'bastogne',pos:[50.003,5.716],incident:null},
+  {id:'P-02',name:'Patrouille Bastogne Bravo',type:'police',status:'dispatched',zone:'bastogne',pos:[50.012,5.730],incident:'INC001'},
+  {id:'P-03',name:'Patrouille Liège Centre',type:'police',status:'available',zone:'liege',pos:[50.645,5.575],incident:null},
+  {id:'P-04',name:'Patrouille Namur Nord',type:'police',status:'available',zone:'namur',pos:[50.468,4.869],incident:null},
+  {id:'P-05',name:'Brigade Criminelle Liège',type:'police',status:'available',zone:'liege',pos:[50.650,5.568],incident:null},
+  {id:'F-01',name:'Caserne Bastogne',type:'fire',status:'dispatched',zone:'bastogne',pos:[50.008,5.718],incident:'INC001'},
+  {id:'F-02',name:'Caserne Liège 1',type:'fire',status:'dispatched',zone:'liege',pos:[50.638,5.568],incident:'INC002'},
+  {id:'F-03',name:'Caserne Namur Centre',type:'fire',status:'available',zone:'namur',pos:[50.472,4.871],incident:null},
+  {id:'F-04',name:'Caserne Marche',type:'fire',status:'available',zone:'marche',pos:[50.230,5.348],incident:null},
+  {id:'A-01',name:'SMUR Bastogne',type:'ambulance',status:'dispatched',zone:'bastogne',pos:[50.006,5.722],incident:'INC003'},
+  {id:'A-02',name:'SMUR Liège CHU',type:'ambulance',status:'available',zone:'liege',pos:[50.600,5.581],incident:null},
+  {id:'A-03',name:'SMUR Namur',type:'ambulance',status:'available',zone:'namur',pos:[50.460,4.862],incident:null},
+  {id:'A-04',name:'PIT Arlon',type:'ambulance',status:'available',zone:'arlon',pos:[49.685,5.817],incident:null},
+];
+
+let incidents=[
+  {id:'INC001',type:'Accident de la route',priority:1,address:'Route N4, km 47, Bastogne',desc:'Collision frontale entre deux véhicules. Plusieurs blessés signalés dont une personne coincée. Route nationale bloquée.',pos:[50.015,5.740],status:'active',units:['P-02','F-01'],time:new Date(Date.now()-18*60000)},
+  {id:'INC002',type:'Incendie',priority:1,address:'Rue de la Montagne 14, Liège',desc:'Incendie dans un immeuble résidentiel de 6 étages, départ de feu au 3ème. Plusieurs résidents signalés bloqués.',pos:[50.641,5.572],status:'active',units:['F-02'],time:new Date(Date.now()-35*60000)},
+  {id:'INC003',type:'Malaise / Urgence médicale',priority:2,address:'Place du Marché 3, Bastogne',desc:'Personne de 72 ans inconsciente. Arrêt cardiaque suspecté par les témoins. RCP en cours.',pos:[50.000,5.715],status:'active',units:['A-01'],time:new Date(Date.now()-8*60000)},
+  {id:'INC004',type:'Cambriolage',priority:3,address:'Avenue des Ardennes 88, Namur',desc:'Cambriolage en cours signalé par les voisins. Bruit de vitres brisées. Suspects potentiellement encore sur place.',pos:[50.470,4.875],status:'pending',units:[],time:new Date(Date.now()-2*60000)},
+];
+
+let incCounter=5,unitFilter='all',map,uMarkers={},iMarkers={};
+
+// CLOCK
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+}
+setInterval(tick,1000);tick();
+
+// NAVIGATION
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='map')setTimeout(()=>map&&map.invalidateSize(),80);
+  if(id==='units')renderUnits();
+  if(id==='incidents')renderIncidents();
+}
+
+// NOTIFY
+function notify(msg,type='info'){
+  const w=document.getElementById('notif-wrap');
+  const n=document.createElement('div');
+  n.className=`notif n-${type}`;n.textContent=msg;
+  w.appendChild(n);setTimeout(()=>n.remove(),4200);
+}
+
+// MAP INIT
+function initMap(){
+  map=L.map('map',{zoomControl:true}).setView([50.25,5.4],9);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO',maxZoom:19
+  }).addTo(map);
+  renderMapAll();
+}
+
+function unitIcon(u){
+  const c={police:'#4f9cf9',fire:'#f05252',ambulance:'#31c48d'}[u.type];
+  const glow=u.status==='dispatched'?`0 0 14px ${c}`:`0 0 6px ${c}`;
+  const alpha=u.status==='out_of_service'?.35:1;
+  return L.divIcon({className:'',iconSize:[34,34],iconAnchor:[17,17],
+    html:`<div style="width:34px;height:34px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,${u.status==='dispatched'?.9:.4});display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#000;font-family:Rajdhani,sans-serif;box-shadow:${glow};opacity:${alpha};">${u.id}</div>`
+  });
+}
+function incIcon(i){
+  const c={1:'#f05252',2:'#f0b429',3:'#4f9cf9'}[i.priority];
+  const anim=i.priority===1?'class="pulse-anim"':'';
+  return L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],
+    html:`<div ${anim} style="width:36px;height:36px;border-radius:6px;background:${c};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:${i.priority===2?'#000':'#fff'};border:2px solid rgba(255,255,255,.75);">P${i.priority}</div>`
+  });
+}
+
+function renderMapAll(){
+  units.forEach(u=>{
+    if(uMarkers[u.id])map.removeLayer(uMarkers[u.id]);
+    const typeLabel={police:'Police',fire:'Pompiers',ambulance:'Ambulance'}[u.type];
+    const statusLabel={available:'Disponible',dispatched:'Dépêché',out_of_service:'Hors service'}[u.status]||u.status;
+    const m=L.marker(u.pos,{icon:unitIcon(u)}).addTo(map)
+      .bindPopup(`<b style="font-size:14px;color:#fff">${u.id} — ${u.name}</b><br><span style="color:#7a92b0">${typeLabel}</span><br>Statut: <b>${statusLabel}</b>${u.incident?`<br>Incident: <b>${u.incident}</b>`:''}`);
+    uMarkers[u.id]=m;
+  });
+  incidents.forEach(i=>{
+    if(iMarkers[i.id])map.removeLayer(iMarkers[i.id]);
+    if(i.status==='closed')return;
+    const m=L.marker(i.pos,{icon:incIcon(i)}).addTo(map)
+      .bindPopup(`<b style="font-size:14px;color:#fff">${i.id}</b><br>${i.type}<br><span style="color:#7a92b0">📍 ${i.address}</span><br>Unités: ${i.units.join(', ')||'Aucune'}`);
+    iMarkers[i.id]=m;
+  });
+  renderSidebar();updateTopBar();
+}
+
+function renderSidebar(){
+  const active=incidents.filter(i=>i.status!=='closed');
+  document.getElementById('sb-incidents').innerHTML=active.length?active.map(i=>`
+    <div class="sidebar-item" onclick="flyTo(${i.pos[0]},${i.pos[1]},'${i.id}','inc')">
+      <div class="dot dot-${i.priority===1?'critical':i.priority===2?'urgent':'minor'}"></div>
+      <div class="item-info">
+        <div class="item-name">${i.type}</div>
+        <div class="item-sub">${i.address.substring(0,32)}…</div>
+      </div>
+      <span class="us ${i.status==='active'?'s-dispatched':'s-hs'}">${i.status==='active'?'ACTIF':'ATTENTE'}</span>
+    </div>`).join(''):`<div class="empty-state">Aucun incident actif</div>`;
+
+  document.getElementById('sb-units').innerHTML=units.map(u=>`
+    <div class="sidebar-item" onclick="flyTo(${u.pos[0]},${u.pos[1]},'${u.id}','unit')">
+      <div class="dot dot-${u.type==='police'?'police':u.type==='fire'?'fire':'amb'}"></div>
+      <div class="item-info">
+        <div class="item-name">${u.id} — ${u.name}</div>
+        <div class="item-sub">${u.zone.charAt(0).toUpperCase()+u.zone.slice(1)}</div>
+      </div>
+      <span class="us ${u.status==='available'?'s-available':u.status==='dispatched'?'s-dispatched':'s-hs'}">${u.status==='available'?'DISPO':u.status==='dispatched'?'DÉPÊCHÉ':'H.S.'}</span>
+    </div>`).join('');
+}
+
+function flyTo(lat,lng,id,kind){
+  map.flyTo([lat,lng],15,{animate:true,duration:1});
+  setTimeout(()=>{
+    const m=kind==='inc'?iMarkers[id]:uMarkers[id];
+    if(m)m.openPopup();
+  },1000);
+}
+
+function updateTopBar(){
+  const n=incidents.filter(i=>i.status==='active').length;
+  document.getElementById('live-count').textContent=n;
+  document.getElementById('badge-count').textContent=incidents.filter(i=>i.status!=='closed').length;
+}
+
+// UNITS TABLE
+function renderUnits(){
+  const list=unitFilter==='all'?units:units.filter(u=>u.type===unitFilter);
+  document.getElementById('units-tbody').innerHTML=list.map(u=>{
+    const tl={police:'POLICE',fire:'POMPIERS',ambulance:'AMBULANCE'}[u.type];
+    const tc=u.type==='police'?'type-police':u.type==='fire'?'type-fire':'type-amb';
+    const sl=u.status==='available'?'Disponible':u.status==='dispatched'?'Dépêché':'Hors service';
+    const sc=u.status==='available'?'s-available':u.status==='dispatched'?'s-dispatched':'s-hs';
+    return `<tr>
+      <td><b>${u.id}</b><br><span style="font-size:11px;color:var(--text2)">${u.name}</span></td>
+      <td><span class="type-badge ${tc}">${tl}</span></td>
+      <td><span class="us ${sc}">${sl}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${u.zone.charAt(0).toUpperCase()+u.zone.slice(1)}</td>
+      <td style="font-size:12px;font-family:'Share Tech Mono',monospace">${u.incident||'—'}</td>
+      <td><div class="action-btns">
+        ${u.status!=='available'?`<button class="btn btn-success btn-sm" onclick="setStatus('${u.id}','available')">DISPONIBLE</button>`:''}
+        ${u.status==='available'?`<button class="btn btn-ghost btn-sm" onclick="setStatus('${u.id}','out_of_service')">HORS SERVICE</button>`:''}
+        <button class="btn btn-danger btn-sm" onclick="delUnit('${u.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterUnits(type,btn){
+  unitFilter=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderUnits();
+}
+
+function setStatus(id,status){
+  const u=units.find(x=>x.id===id);if(!u)return;
+  if(status==='available'&&u.incident){
+    const i=incidents.find(x=>x.id===u.incident);
+    if(i)i.units=i.units.filter(x=>x!==id);
+    u.incident=null;
+  }
+  u.status=status;
+  renderUnits();renderMapAll();
+  notify(`${u.id} → ${status==='available'?'Disponible':'Hors service'}`,status==='available'?'success':'warn');
+}
+
+function delUnit(id){
+  units=units.filter(u=>u.id!==id);
+  if(uMarkers[id]){map.removeLayer(uMarkers[id]);delete uMarkers[id];}
+  renderUnits();renderSidebar();notify('Unité retirée du registre','error');
+}
+
+// INCIDENTS
+function renderIncidents(){
+  const p1=incidents.filter(i=>i.priority===1&&i.status!=='closed').length;
+  const p2=incidents.filter(i=>i.priority===2&&i.status!=='closed').length;
+  const p3=incidents.filter(i=>i.priority===3&&i.status!=='closed').length;
+  const cl=incidents.filter(i=>i.status==='closed').length;
+  document.getElementById('inc-stats').innerHTML=`
+    <div class="stat-box"><div class="stat-val" style="color:var(--critical)">${p1}</div><div class="stat-label">P1 Critique</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--urgent)">${p2}</div><div class="stat-label">P2 Urgent</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--minor)">${p3}</div><div class="stat-label">P3 Non-urgent</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--text2)">${cl}</div><div class="stat-label">Clôturés</div></div>
+  `;
+  const sorted=[...incidents].sort((a,b)=>{
+    if(a.status==='closed'&&b.status!=='closed')return 1;
+    if(b.status==='closed'&&a.status!=='closed')return-1;
+    return a.priority-b.priority;
+  });
+  document.getElementById('inc-grid').innerHTML=sorted.map(i=>{
+    const el=Math.floor((Date.now()-i.time)/60000);
+    const uChips=i.units.map(uid=>{
+      const u=units.find(x=>x.id===uid);
+      if(!u)return'';
+      const c=u.type==='police'?'uc-police':u.type==='fire'?'uc-fire':'uc-amb';
+      return `<span class="uc ${c}">${uid}</span>`;
+    }).join('');
+    return `<div class="inc-card p${i.priority}-card" onclick="openDetail('${i.id}')">
+      <div class="inc-hdr">
+        <div class="prio-badge p${i.priority}">P${i.priority}</div>
+        <div class="inc-title">${i.type}</div>
+        <span class="inc-status is-${i.status}">${i.status==='active'?'ACTIF':i.status==='pending'?'EN ATTENTE':'CLÔTURÉ'}</span>
+      </div>
+      <div class="inc-body">
+        <div class="inc-info">📍 ${i.address}</div>
+        <div class="inc-info">🕐 Il y a ${el} min &nbsp;·&nbsp; <span style="font-family:'Share Tech Mono',monospace;font-size:11px">${i.id}</span></div>
+        <div class="inc-info" style="font-size:11px;color:var(--text2)">${i.desc.length>90?i.desc.substring(0,90)+'…':i.desc}</div>
+        <div class="inc-units">${uChips||'<span style="font-size:11px;color:var(--text2)">Aucune unité assignée</span>'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// DETAIL MODAL
+function openDetail(id){
+  const i=incidents.find(x=>x.id===id);if(!i)return;
+  document.getElementById('d-title').textContent=`${i.id} — ${i.type}`;
+  const el=Math.floor((Date.now()-i.time)/60000);
+  const avail=units.filter(u=>u.status==='available'||u.incident===id);
+  const chips=i.units.map(uid=>{
+    const u=units.find(x=>x.id===uid);
+    const c=u?`uc-${u.type==='police'?'police':u.type==='fire'?'fire':'amb'}`:'';
+    return `<span class="uc ${c}" style="font-size:13px;padding:4px 12px">${uid}</span>`;
+  }).join('')||'<span style="color:var(--text2)">Aucune</span>';
+
+  document.getElementById('d-body').innerHTML=`
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+      <span class="prio-badge p${i.priority}">P${i.priority}</span>
+      <span class="inc-status is-${i.status}">${i.status==='active'?'ACTIF':i.status==='pending'?'EN ATTENTE':'CLÔTURÉ'}</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text2)">${i.id}</span>
+    </div>
+    <div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:4px">Localisation</div><div>📍 ${i.address}</div></div>
+    <div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:4px">Description</div><div style="color:var(--text2);font-size:13px;line-height:1.5">${i.desc}</div></div>
+    <div style="margin-bottom:16px"><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:4px">Heure d'appel</div><div>🕐 ${i.time.toLocaleTimeString('fr-BE')} — Il y a ${el} min</div></div>
+    <div style="margin-bottom:16px"><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:8px">Unités assignées</div><div style="display:flex;gap:8px;flex-wrap:wrap">${chips}</div></div>
+    ${i.status!=='closed'?`
+    <hr class="sep">
+    <div><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:10px">Modifier les assignations</div>
+    <div class="unit-sel-grid" id="d-unit-grid">
+      ${avail.map(u=>{
+        const sel=i.units.includes(u.id);
+        const cc=u.type==='police'?'uc-police':u.type==='fire'?'uc-fire':'uc-amb';
+        return `<div class="unit-sel-item ${sel?'selected':''}" onclick="toggleAssign('${id}','${u.id}',this)" data-uid="${u.id}">
+          <span class="uc ${cc}">${u.id}</span>
+          <span style="font-size:12px">${u.name}</span>
+        </div>`;
+      }).join('')||'<span style="font-size:12px;color:var(--text2)">Aucune unité disponible</span>'}
+    </div></div>`:''}
+  `;
+  document.getElementById('d-footer').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('modal-inc-detail')">FERMER</button>
+    ${i.status!=='closed'?`
+      <button class="btn btn-primary" onclick="saveDetail('${id}')">SAUVEGARDER</button>
+      <button class="btn btn-danger" onclick="closeInc('${id}')">CLÔTURER L'INCIDENT</button>`:''}
+  `;
+  openModal('modal-inc-detail');
+}
+
+function toggleAssign(incId,uid,el){
+  const i=incidents.find(x=>x.id===incId);if(!i)return;
+  if(i.units.includes(uid)){i.units=i.units.filter(x=>x!==uid);el.classList.remove('selected');}
+  else{i.units.push(uid);el.classList.add('selected');}
+}
+
+function saveDetail(id){
+  const i=incidents.find(x=>x.id===id);if(!i)return;
+  units.forEach(u=>{
+    if(i.units.includes(u.id)){u.status='dispatched';u.incident=id;i.status='active';}
+    else if(u.incident===id){u.status='available';u.incident=null;}
+  });
+  closeModal('modal-inc-detail');renderMapAll();renderIncidents();
+  notify(`Incident ${id} mis à jour`,'success');
+}
+
+function closeInc(id){
+  const i=incidents.find(x=>x.id===id);if(!i)return;
+  i.status='closed';
+  units.forEach(u=>{if(u.incident===id){u.status='available';u.incident=null;}});
+  if(iMarkers[id]){map.removeLayer(iMarkers[id]);delete iMarkers[id];}
+  closeModal('modal-inc-detail');renderMapAll();renderIncidents();
+  notify(`Incident ${id} clôturé avec succès`,'success');
+}
+
+// CREATE INCIDENT
+function openCreateIncModal(){
+  const avail=units.filter(u=>u.status==='available');
+  document.getElementById('f-units').innerHTML=avail.length?avail.map(u=>{
+    const cc=u.type==='police'?'uc-police':u.type==='fire'?'uc-fire':'uc-amb';
+    return `<div class="unit-sel-item" onclick="this.classList.toggle('selected')" data-uid="${u.id}">
+      <span class="uc ${cc}">${u.id}</span>
+      <span style="font-size:12px">${u.name}</span>
+    </div>`;
+  }).join(''):`<span style="font-size:12px;color:var(--text2)">Aucune unité disponible actuellement</span>`;
+  openModal('modal-create-incident');
+}
+
+function createIncident(){
+  const type=document.getElementById('f-type').value;
+  const priority=parseInt(document.getElementById('f-priority').value);
+  const addr=document.getElementById('f-addr').value||'Adresse non renseignée';
+  const desc=document.getElementById('f-desc').value||'Pas de description fournie.';
+  const sel=[...document.querySelectorAll('#f-units .unit-sel-item.selected')].map(el=>el.dataset.uid);
+
+  const base=sel.length?units.find(u=>u.id===sel[0]).pos:ZONES.bastogne;
+  const pos=[base[0]+(Math.random()-.5)*.06,base[1]+(Math.random()-.5)*.06];
+  const id='INC00'+incCounter++;
+  incidents.push({id,type,priority,address:addr,desc,pos,status:sel.length?'active':'pending',units:sel,time:new Date()});
+  sel.forEach(uid=>{const u=units.find(x=>x.id===uid);if(u){u.status='dispatched';u.incident=id;}});
+
+  closeModal('modal-create-incident');
+  renderMapAll();renderIncidents();
+  document.getElementById('f-addr').value='';document.getElementById('f-desc').value='';
+  notify(`Incident ${id} créé — P${priority}`,priority===1?'error':priority===2?'warn':'info');
+}
+
+// ADD UNIT
+function addUnit(){
+  const cs=document.getElementById('u-callsign').value.trim();
+  const nm=document.getElementById('u-name').value.trim()||'Unité '+cs;
+  const tp=document.getElementById('u-type').value;
+  const zn=document.getElementById('u-zone').value;
+  if(!cs){notify('Indicatif radio requis','error');return;}
+  if(units.find(u=>u.id===cs)){notify('Cet indicatif est déjà utilisé','error');return;}
+  const base=ZONES[zn];
+  const pos=[base[0]+(Math.random()-.5)*.04,base[1]+(Math.random()-.5)*.04];
+  units.push({id:cs,name:nm,type:tp,status:'available',zone:zn,pos,incident:null});
+  closeModal('modal-add-unit');renderMapAll();renderUnits();
+  notify(`Unité ${cs} ajoutée au registre`,'success');
+  document.getElementById('u-callsign').value='';document.getElementById('u-name').value='';
+}
+
+// MODALS
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});
+});
+
+// BOOT
+window.addEventListener('load',()=>{
+  initMap();renderIncidents();renderUnits();
+});
+</script>
+</body>
+</html>
