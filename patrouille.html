@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Patrouilles — Centrale 112 Liège</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#020609;--panel:#06101a;--panel2:#0b1825;--panel3:#101f30;
+  --border:#142030;--border2:#1c3048;--border3:#254060;
+  --police:#3b9eff;--fire:#ff4040;--amb:#00d4a0;--heli:#c084fc;
+  --txt:#b0c8e4;--txt2:#527090;--txt3:#2e4a66;
+  --gold:#ffb800;--red:#ff3333;--green:#00d4a0;
+}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* TOPBAR */
+.topbar{height:54px;background:var(--panel);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 16px;gap:16px;flex-shrink:0}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,#cc1111,#880000);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:11px;font-weight:900;color:#fff;box-shadow:0 0 14px rgba(200,30,30,.45);flex-shrink:0}
+.brand-main{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;color:#fff}
+.brand-sub{font-size:10px;color:var(--txt2);letter-spacing:2px}
+.topbar-stats{display:flex;gap:8px;flex:1;justify-content:center}
+.ts{padding:5px 14px;border-radius:3px;border:1px solid var(--border2);text-align:center;min-width:76px}
+.ts-val{font-family:'Share Tech Mono',monospace;font-size:18px;font-weight:700;line-height:1}
+.ts-lbl{font-size:9px;color:var(--txt2);letter-spacing:1.5px;text-transform:uppercase}
+.clock{font-family:'Share Tech Mono',monospace;font-size:20px;color:var(--gold);letter-spacing:2px;flex-shrink:0}
+.online-badge{font-size:9px;font-weight:700;letter-spacing:2px;padding:4px 10px;border-radius:3px;background:rgba(0,212,160,.08);color:var(--amb);border:1px solid rgba(0,212,160,.25);flex-shrink:0}
+.online-badge::before{content:'● ';animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* NAV */
+.nav{height:40px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0}
+.nav a{display:flex;align-items:center;gap:6px;padding:0 22px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);text-decoration:none;border-bottom:2px solid transparent;transition:all .18s}
+.nav a:hover{color:var(--txt);background:rgba(255,255,255,.02)}
+.nav a.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-divider{width:1px;background:var(--border);margin:6px 0}
+.nav-badge{background:var(--red);color:#fff;border-radius:8px;padding:0 6px;font-size:9px;line-height:16px}
+
+/* TOOLBAR */
+.toolbar{padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.page-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;color:#fff}
+.filters{display:flex;gap:6px;flex:1}
+.fp{padding:5px 12px;border-radius:15px;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt2);font-family:'Rajdhani',sans-serif;text-transform:uppercase;transition:all .18s}
+.fp:hover{color:var(--txt)}
+.fp.on{border-color:var(--gold);color:var(--gold);background:rgba(255,184,0,.07)}
+
+/* MAIN LAYOUT */
+.main{flex:1;overflow:hidden;display:flex;min-height:0}
+
+/* PATROL LIST */
+.patrol-list{width:320px;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--panel)}
+.pl-hdr{padding:10px 14px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pl-hdr-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt2)}
+.pl-hdr-cnt{background:var(--border2);color:var(--txt2);border-radius:8px;padding:0 8px;font-size:9px;line-height:18px}
+.pl-scroll{flex:1;overflow-y:auto}
+.pl-section{border-bottom:1px solid var(--border)}
+.pl-section-hdr{padding:6px 14px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);background:rgba(0,0,0,.2)}
+.patrol-item{padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .12s;border-left:3px solid transparent}
+.patrol-item:hover{background:rgba(255,255,255,.02)}
+.patrol-item.sel{background:rgba(255,184,0,.04);border-left-color:var(--gold)}
+.pi-icon{width:34px;height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.pi-info{flex:1;min-width:0}
+.pi-name{font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-type{font-size:9px;color:var(--txt2);margin-top:2px}
+.pi-status{font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px;white-space:nowrap;letter-spacing:.5px}
+.ps-dispo{background:rgba(0,212,160,.1);color:var(--amb);border:1px solid rgba(0,212,160,.2)}
+.ps-dep{background:rgba(255,64,64,.1);color:var(--fire);border:1px solid rgba(255,64,64,.2)}
+.ps-hs{background:rgba(80,112,144,.1);color:var(--txt2);border:1px solid var(--border)}
+.pl-empty{padding:20px;text-align:center;color:var(--txt3);font-size:10px;letter-spacing:2px;text-transform:uppercase}
+
+/* PATROL DETAIL */
+.patrol-detail{flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--bg)}
+.pd-empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--txt3)}
+.pd-empty-icon{font-size:42px;opacity:.25}
+.pd-empty-txt{font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.pd-scroll{flex:1;overflow-y:auto;padding:20px}
+.pd-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.pd-header-icon{width:52px;height:52px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.pd-header-info{flex:1}
+.pd-header-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:3px}
+.pd-header-type{font-size:11px;color:var(--txt2)}
+.pd-section{margin-bottom:18px}
+.pd-section-title{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pd-box{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:9px 12px}
+.pd-box-lbl{font-size:9px;color:var(--txt2);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.pd-box-val{font-size:13px;font-weight:700;color:#fff}
+.pers-list{display:flex;flex-direction:column;gap:5px}
+.pers-row{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:8px 11px;display:flex;align-items:center;gap:9px}
+.pers-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:'Orbitron',sans-serif}
+.pers-name{font-size:12px;font-weight:600;color:#fff;flex:1}
+.pers-role{font-size:9px;color:var(--txt2);letter-spacing:.5px}
+.pd-footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--panel);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+
+/* MODAL & WIZARD */
+.modal-overlay{position:fixed;inset:0;background:rgba(2,6,9,.9);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:7px;width:640px;max-height:86vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.9)}
+.mh{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel2);flex-shrink:0}
+.mh-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;color:#fff}
+.mh-close{background:none;border:none;color:var(--txt2);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:3px;transition:all .2s}
+.mh-close:hover{color:#fff;background:rgba(255,255,255,.08)}
+.wizard-steps{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.ws{flex:1;padding:10px;text-align:center;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);border-bottom:2px solid transparent;transition:all .2s;cursor:default}
+.ws.active{color:var(--gold);border-bottom-color:var(--gold)}
+.ws.done{color:var(--amb);border-bottom-color:transparent}
+.wb{padding:18px;overflow-y:auto;flex:1}
+.wb::-webkit-scrollbar{width:4px}
+.wb::-webkit-scrollbar-thumb{background:var(--border2)}
+.step-panel{display:none}
+.step-panel.active{display:block}
+.mf{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:var(--panel2);flex-shrink:0}
+.mf-left{flex:1}
+
+/* Corps selector */
+.corps-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.corps-card{border:2px solid var(--border2);border-radius:6px;padding:16px;cursor:pointer;transition:all .2s;text-align:center}
+.corps-card:hover{border-color:var(--border3);background:rgba(255,255,255,.02)}
+.corps-card.sel{border-color:var(--gold);background:rgba(255,184,0,.05)}
+.cc-icon{font-size:30px;margin-bottom:7px}
+.cc-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.cc-sub{font-size:10px;color:var(--txt2)}
+
+/* Vehicle selector */
+.vehicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.vc{border:1px solid var(--border2);border-radius:4px;padding:11px 12px;cursor:pointer;transition:all .2s;display:flex;gap:10px;align-items:center}
+.vc:hover{border-color:var(--border3);background:rgba(255,255,255,.015)}
+.vc.sel{border-color:var(--gold);background:rgba(255,184,0,.05)}
+.vc-icon{font-size:20px;flex-shrink:0}
+.vc-info{flex:1;min-width:0}
+.vc-name{font-size:12px;font-weight:700;color:#fff}
+.vc-seats{font-size:9px;color:var(--txt2);margin-top:2px}
+
+/* Personnel slots */
+.slot-grid{display:flex;flex-direction:column;gap:7px}
+.slot-row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:9px 12px}
+.slot-role{font-size:10px;font-weight:700;color:var(--txt2);letter-spacing:.5px}
+.slot-input{background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:6px 9px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:12px;outline:none;transition:border-color .2s;width:100%}
+.slot-input:focus{border-color:var(--gold)}
+
+/* Summary */
+.summary-hdr{text-align:center;margin-bottom:18px}
+.summary-hdr-icon{font-size:36px;margin-bottom:6px}
+.summary-hdr-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:3px}
+.summary-hdr-sub{font-size:11px;color:var(--txt2)}
+
+/* Form */
+.fg{margin-bottom:13px}
+.fl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:5px;display:block}
+.fi,.fs{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:8px 11px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.fi:focus,.fs:focus{border-color:var(--gold)}
+.fs option{background:var(--panel2)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fhint{font-size:9px;color:var(--txt2);margin-top:4px;letter-spacing:.5px}
+
+/* BTN */
+.btn{padding:8px 16px;border-radius:3px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;text-transform:uppercase;transition:all .2s}
+.btn-primary{background:var(--gold);color:#000}
+.btn-primary:hover{background:#ffcc22}
+.btn-danger{background:rgba(255,51,51,.1);color:var(--red);border:1px solid rgba(255,51,51,.25)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-success{background:rgba(0,212,160,.1);color:var(--amb);border:1px solid rgba(0,212,160,.2)}
+.btn-success:hover{background:var(--amb);color:#000}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--txt2)}
+.btn-ghost:hover{border-color:var(--txt);color:var(--txt)}
+
+/* NOTIF */
+.notifs{position:fixed;top:60px;right:14px;z-index:9000;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.notif{padding:10px 14px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:260px;border-left:3px solid;animation:slideIn .22s ease;font-family:'Rajdhani',sans-serif;text-transform:uppercase}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.n-ok{background:rgba(0,212,160,.1);border-color:var(--amb);color:var(--amb)}
+.n-err{background:rgba(255,51,51,.1);border-color:var(--red);color:var(--red)}
+.n-info{background:rgba(59,158,255,.1);border-color:var(--police);color:var(--police)}
+.n-warn{background:rgba(255,184,0,.1);border-color:var(--gold);color:var(--gold)}
+
+/* Inc select modal */
+.inc-pick-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:300px;overflow-y:auto}
+.inc-pick-item{padding:10px 12px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;display:flex;gap:10px;align-items:center;transition:all .18s}
+.inc-pick-item:hover{border-color:var(--gold);background:rgba(255,184,0,.05)}
+.sep{border:none;border-top:1px solid var(--border);margin:12px 0}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">112</div>
+  <div>
+    <div class="brand-main">CENTRALE D'URGENCE</div>
+    <div class="brand-sub">PROVINCE DE LIÈGE</div>
+  </div>
+  <div class="topbar-stats">
+    <div class="ts"><div class="ts-val" id="st-total" style="color:var(--amb)">0</div><div class="ts-lbl">Patrouilles</div></div>
+    <div class="ts"><div class="ts-val" id="st-dispo" style="color:var(--green)">0</div><div class="ts-lbl">Disponibles</div></div>
+    <div class="ts"><div class="ts-val" id="st-dep" style="color:var(--red)">0</div><div class="ts-lbl">Dépêchées</div></div>
+  </div>
+  <div class="clock" id="clock">00:00:00</div>
+  <div class="online-badge">EN LIGNE</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="map.html">▦ CARTE</a>
+  <div class="nav-divider"></div>
+  <a href="intervention.html">⚑ INTERVENTIONS <span class="nav-badge" id="nav-inc-badge">0</span></a>
+  <div class="nav-divider"></div>
+  <a href="patrouille.html" class="active">⬡ PATROUILLES <span class="nav-badge" id="nav-pat-badge">0</span></a>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="page-title">PATROUILLES</div>
+  <div class="filters" id="filters">
+    <button class="fp on" onclick="setFilter('all',this)">TOUTES</button>
+    <button class="fp" onclick="setFilter('pompiers',this)">POMPIERS</button>
+    <button class="fp" onclick="setFilter('chl',this)">CHL / MÉDICAL</button>
+    <button class="fp" onclick="setFilter('police',this)">POLICE</button>
+    <button class="fp" onclick="setFilter('available',this)">DISPONIBLES</button>
+    <button class="fp" onclick="setFilter('dispatched',this)">DÉPÊCHÉES</button>
+  </div>
+  <button class="btn btn-primary" onclick="openWizard()">+ CRÉER PATROUILLE</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- LIST -->
+  <div class="patrol-list">
+    <div class="pl-hdr">
+      <span class="pl-hdr-title">UNITÉS ENREGISTRÉES</span>
+      <span class="pl-hdr-cnt" id="list-count">0</span>
+    </div>
+    <div class="pl-scroll" id="patrol-list-scroll"></div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="patrol-detail" id="patrol-detail">
+    <div class="pd-empty">
+      <div class="pd-empty-icon">⬡</div>
+      <div class="pd-empty-txt">Sélectionner une patrouille</div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFS -->
+<div class="notifs" id="notifs"></div>
+
+<!-- MODAL: WIZARD CRÉATION -->
+<div class="modal-overlay" id="modal-wizard">
+  <div class="modal">
+    <div class="mh">
+      <span class="mh-title">⬡ NOUVELLE PATROUILLE</span>
+      <button class="mh-close" onclick="closeModal('modal-wizard')">✕</button>
+    </div>
+    <div class="wizard-steps">
+      <div class="ws active" id="ws1">1 — CORPS</div>
+      <div class="ws" id="ws2">2 — VÉHICULE</div>
+      <div class="ws" id="ws3">3 — PERSONNEL</div>
+      <div class="ws" id="ws4">4 — CONFIRMER</div>
+    </div>
+    <div class="wb">
+      <!-- STEP 1 -->
+      <div class="step-panel active" id="sp1">
+        <div class="fg"><label class="fl">Corps d'intervention</label></div>
+        <div class="corps-grid">
+          <div class="corps-card" id="cc-pompiers" onclick="selectCorps('pompiers')">
+            <div class="cc-icon">🚒</div>
+            <div class="cc-name">Pompiers</div>
+            <div class="cc-sub">Service Incendie & Secours</div>
+          </div>
+          <div class="corps-card" id="cc-chl" onclick="selectCorps('chl')">
+            <div class="cc-icon">🏥</div>
+            <div class="cc-name">CHL / Médical</div>
+            <div class="cc-sub">SMUR · Ambulance · HML</div>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Indicatif radio</label><input class="fi" id="w-callsign" placeholder="Ex: F-10, SMUR-4, HML-2"/></div>
+          <div class="fg"><label class="fl">Secteur</label>
+            <select class="fs" id="w-zone">
+              <option value="liege_centre">Liège Centre</option>
+              <option value="liege_nord">Liège Nord / Ans</option>
+              <option value="seraing">Seraing</option>
+              <option value="verviers">Verviers</option>
+              <option value="huy">Huy</option>
+              <option value="waremme">Waremme</option>
+              <option value="spa">Spa</option>
+              <option value="vise">Visé</option>
+              <option value="herve">Herve</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Nom de la patrouille</label><input class="fi" id="w-name" placeholder="Ex: Caserne Liège — Pompe 2"/></div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-panel" id="sp2">
+        <div class="fg"><label class="fl">Type de véhicule</label></div>
+        <div class="vehicle-grid" id="vehicle-grid"></div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-panel" id="sp3">
+        <div class="fg">
+          <label class="fl">Affecter le personnel</label>
+          <p class="fhint">Renseignez le nom de chaque agent. Laissez vide si non pourvu.</p>
+        </div>
+        <div class="slot-grid" id="slot-grid"></div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-panel" id="sp4">
+        <div id="summary-content"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <div class="mf-left">
+        <button class="btn btn-ghost" id="w-back" style="display:none" onclick="wStep(-1)">← PRÉCÉDENT</button>
+      </div>
+      <button class="btn btn-ghost" onclick="closeModal('modal-wizard')">ANNULER</button>
+      <button class="btn btn-primary" id="w-next" onclick="wStep(1)">SUIVANT →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DISPATCHER -->
+<div class="modal-overlay" id="modal-dispatch">
+  <div class="modal" style="width:480px">
+    <div class="mh"><span class="mh-title">DISPATCHER LA PATROUILLE</span><button class="mh-close" onclick="closeModal('modal-dispatch')">✕</button></div>
+    <div class="wb">
+      <p style="font-size:12px;color:var(--txt2);margin-bottom:12px">Sélectionner l'incident à assigner :</p>
+      <div class="inc-pick-list" id="inc-pick-list"></div>
+    </div>
+    <div class="mf"><button class="btn btn-ghost" onclick="closeModal('modal-dispatch')">ANNULER</button></div>
+  </div>
+</div>
+
+<script>
+// ═══ CONSTANTS ═══
+const ZONES={liege_centre:{name:'Liège Centre',pos:[50.6451,5.5734]},liege_nord:{name:'Liège Nord / Ans',pos:[50.6650,5.5270]},seraing:{name:'Seraing',pos:[50.5980,5.5070]},verviers:{name:'Verviers',pos:[50.5890,5.8640]},huy:{name:'Huy',pos:[50.5160,5.2380]},waremme:{name:'Waremme',pos:[50.7000,5.2580]},spa:{name:'Spa',pos:[50.4920,5.8700]},vise:{name:'Visé',pos:[50.7390,5.7060]},herve:{name:'Herve',pos:[50.6380,5.7980]}};
+
+const VT={
+  pompiers:{
+    balisage:{label:'Balisage / Signalisation',icon:'⚠',color:'#f0b429',seats:3,roles:['Chef d\'équipe','Équipier','Équipier']},
+    pompe:{label:'Pompe — FPTSR',icon:'🚒',color:'#ff4040',seats:6,roles:['Chef d\'agrès','Pilote','Sapeur-pompier','Sapeur-pompier','Sapeur-pompier','Sapeur-pompier']},
+    echelle:{label:'Échelle Pivotante — EPA',icon:'↑',color:'#ff4040',seats:3,roles:['Chef d\'agrès','Pilote','Équipier']},
+    vsav:{label:'Ambulance de secours — VSAV',icon:'🚑',color:'#00d4a0',seats:3,roles:['Chef d\'équipe','Équipier BSP','Équipier BSP']}
+  },
+  chl:{
+    smur:{label:'SMUR',icon:'➕',color:'#00d4a0',seats:3,roles:['Médecin urgentiste','Infirmier SMUR','Ambulancier SMUR']},
+    ambulance:{label:'Ambulance',icon:'🚑',color:'#3b9eff',seats:2,roles:['Ambulancier chef','Ambulancier']},
+    hml:{label:'Hélicoptère Médical — HML',icon:'🚁',color:'#c084fc',seats:4,roles:['Pilote','Co-pilote','Médecin urgentiste','Infirmier SMUR']}
+  }
+};
+
+const AVATARS=['#3b9eff','#00d4a0','#ffb800','#ff4040','#c084fc','#f97316','#22d3ee','#a3e635'];
+
+const S={get:k=>{try{return JSON.parse(localStorage.getItem('c112_'+k))}catch(e){return null}},set:(k,v)=>{localStorage.setItem('c112_'+k,JSON.stringify(v));localStorage.setItem('c112_ts',Date.now())}};
+
+// ═══ WIZARD STATE ═══
+let wData={corps:null,vehicleType:null,personnel:[]};
+let wCurrentStep=1;
+let filterMode='all';
+let selectedPatrolId=null;
+
+setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':')},1000);
+
+// ═══ RENDER ═══
+function render(){
+  const patrols=S.get('patrols')||[];
+  const incidents=S.get('incidents')||[];
+
+  document.getElementById('st-total').textContent=patrols.length;
+  document.getElementById('st-dispo').textContent=patrols.filter(p=>p.status==='available').length;
+  document.getElementById('st-dep').textContent=patrols.filter(p=>p.status==='dispatched').length;
+  document.getElementById('nav-inc-badge').textContent=incidents.filter(i=>i.status!=='closed').length;
+  document.getElementById('nav-pat-badge').textContent=patrols.length;
+  document.getElementById('list-count').textContent=patrols.length;
+
+  let list=[...patrols];
+  if(filterMode==='pompiers') list=list.filter(p=>p.corps==='pompiers');
+  else if(filterMode==='chl') list=list.filter(p=>p.corps==='chl');
+  else if(filterMode==='police') list=list.filter(p=>!p.corps);
+  else if(filterMode==='available') list=list.filter(p=>p.status==='available');
+  else if(filterMode==='dispatched') list=list.filter(p=>p.status==='dispatched');
+
+  const scroll=document.getElementById('patrol-list-scroll');
+
+  // Group by corps
+  const groups={pompiers:[],chl:[],other:[]};
+  list.forEach(p=>{
+    if(p.corps==='pompiers') groups.pompiers.push(p);
+    else if(p.corps==='chl') groups.chl.push(p);
+    else groups.other.push(p);
+  });
+
+  let html='';
+  if(groups.pompiers.length){
+    html+=`<div class="pl-section"><div class="pl-section-hdr">🚒 POMPIERS (${groups.pompiers.length})</div>${groups.pompiers.map(p=>renderPatrolItem(p)).join('')}</div>`;
+  }
+  if(groups.chl.length){
+    html+=`<div class="pl-section"><div class="pl-section-hdr">🏥 CHL / MÉDICAL (${groups.chl.length})</div>${groups.chl.map(p=>renderPatrolItem(p)).join('')}</div>`;
+  }
+  if(groups.other.length){
+    html+=`<div class="pl-section"><div class="pl-section-hdr">⬡ AUTRES (${groups.other.length})</div>${groups.other.map(p=>renderPatrolItem(p)).join('')}</div>`;
+  }
+  scroll.innerHTML=html||'<div class="pl-empty">AUCUNE PATROUILLE</div>';
+
+  if(selectedPatrolId) renderDetail(selectedPatrolId);
+}
+
+function renderPatrolItem(p){
+  const vt=p.corps&&p.vehicleType?VT[p.corps]?.[p.vehicleType]:null;
+  const icon=vt?vt.icon:'⬡';
+  const c=vt?vt.color:'#fff';
+  const sc=p.status==='available'?'ps-dispo':p.status==='dispatched'?'ps-dep':'ps-hs';
+  const sl=p.status==='available'?'DISPO':p.status==='dispatched'?'DÉPÊCHÉ':'H.S.';
+  const sel=selectedPatrolId===p.id;
+  return `<div class="patrol-item ${sel?'sel':''}" onclick="selectPatrol('${p.id}')">
+    <div class="pi-icon" style="background:${c}15;border:1px solid ${c}25">${icon}</div>
+    <div class="pi-info">
+      <div class="pi-name">${p.callsign} — ${p.name}</div>
+      <div class="pi-type">${p.corps?p.corps.toUpperCase()+' ·':''} ${vt?vt.label:''} · ${ZONES[p.zone]?.name||p.zone}</div>
+    </div>
+    <span class="pi-status ${sc}">${sl}</span>
+  </div>`;
+}
+
+function selectPatrol(id){
+  selectedPatrolId=id;
+  render();
+  renderDetail(id);
+}
+
+function renderDetail(id){
+  const patrols=S.get('patrols')||[];
+  const incidents=S.get('incidents')||[];
+  const p=patrols.find(x=>x.id===id);
+  const det=document.getElementById('patrol-detail');
+  if(!p){det.innerHTML=`<div class="pd-empty"><div class="pd-empty-icon">⬡</div><div class="pd-empty-txt">Sélectionner une patrouille</div></div>`;return;}
+
+  const vt=p.corps&&p.vehicleType?VT[p.corps]?.[p.vehicleType]:null;
+  const c=vt?vt.color:'#7a9ab0';
+  const icon=vt?vt.icon:'⬡';
+  const sc=p.status==='available'?'ps-dispo':p.status==='dispatched'?'ps-dep':'ps-hs';
+  const sl=p.status==='available'?'DISPONIBLE':p.status==='dispatched'?'DÉPÊCHÉ':'HORS SERVICE';
+  const inc=p.incident?incidents.find(i=>i.id===p.incident):null;
+  const filled=(p.personnel||[]).filter(x=>x.name).length;
+
+  const persRows=(p.personnel||[]).map((pers,i)=>{
+    const ac=AVATARS[i%AVATARS.length];
+    const initials=pers.name?pers.name.split(' ').filter(w=>w).map(w=>w[0]).slice(0,2).join('').toUpperCase():'?';
+    return `<div class="pers-row">
+      <div class="pers-av" style="background:${ac}18;color:${ac};border:1px solid ${ac}25">${initials}</div>
+      <div style="flex:1">
+        <div class="pers-name">${pers.name||'<span style="color:var(--txt2);font-weight:400;font-size:10px">— Non pourvu —</span>'}</div>
+        <div class="pers-role">${pers.role}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  det.innerHTML=`
+    <div style="display:flex;flex-direction:column;height:100%">
+    <div class="pd-scroll">
+      <div class="pd-header">
+        <div class="pd-header-icon" style="background:${c}15;border:1px solid ${c}25">${icon}</div>
+        <div class="pd-header-info">
+          <div class="pd-header-name">${p.callsign} — ${p.name}</div>
+          <div class="pd-header-type">${p.corps?p.corps.toUpperCase():''} · ${vt?vt.label:'Unité'} · ${ZONES[p.zone]?.name||p.zone}</div>
+        </div>
+        <span class="pi-status ${sc}" style="font-size:10px;padding:4px 10px">${sl}</span>
+      </div>
+
+      <div class="pd-section">
+        <div class="pd-section-title">ℹ INFORMATIONS</div>
+        <div class="pd-grid">
+          <div class="pd-box"><div class="pd-box-lbl">Indicatif</div><div class="pd-box-val" style="font-family:'Share Tech Mono',monospace">${p.callsign}</div></div>
+          <div class="pd-box"><div class="pd-box-lbl">Secteur</div><div class="pd-box-val">${ZONES[p.zone]?.name||p.zone}</div></div>
+          <div class="pd-box"><div class="pd-box-lbl">Personnel</div><div class="pd-box-val">${filled} / ${(p.personnel||[]).length} <span style="font-size:10px;color:var(--txt2)">pourvu${filled!==1?'s':''}</span></div></div>
+          <div class="pd-box"><div class="pd-box-lbl">Incident assigné</div><div class="pd-box-val" style="${p.incident?'color:var(--red)':'color:var(--txt2)'}">${p.incident||'—'}</div></div>
+        </div>
+      </div>
+
+      ${inc?`<div class="pd-section">
+        <div class="pd-section-title">⚑ INTERVENTION EN COURS</div>
+        <div class="pd-box" style="cursor:pointer" onclick="window.location.href='intervention.html'">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:${{1:'var(--red)',2:'var(--gold)',3:'var(--police)'}[inc.priority]}20;color:${{1:'var(--red)',2:'var(--gold)',3:'var(--police)'}[inc.priority]};border:1px solid ${{1:'var(--red)',2:'var(--gold)',3:'var(--police)'}[inc.priority]}40;border-radius:3px;padding:4px 8px;font-weight:900;font-family:'Orbitron',sans-serif;font-size:9px">P${inc.priority}</span>
+            <div><div class="pd-box-val" style="font-size:13px">${inc.type}</div><div class="pd-box-lbl" style="margin-top:1px">${inc.address}</div></div>
+          </div>
+        </div>
+      </div>`:''}
+
+      <div class="pd-section">
+        <div class="pd-section-title">👥 PERSONNEL ASSIGNÉ</div>
+        <div class="pers-list">${persRows||'<div class="pl-empty">Aucun personnel renseigné</div>'}</div>
+      </div>
+    </div>
+    <div class="pd-footer">
+      <button class="btn btn-danger" style="font-size:10px" onclick="deletePatrol('${p.id}')">SUPPRIMER</button>
+      ${p.status==='available'?`<button class="btn btn-primary" onclick="openDispatchModal('${p.id}')">DISPATCHER →</button>`:''}
+      ${p.status==='dispatched'?`<button class="btn btn-success" onclick="returnPatrol('${p.id}')">← RETOUR BASE</button>`:''}
+    </div>
+    </div>
+  `;
+}
+
+function setFilter(f,btn){
+  filterMode=f;
+  document.querySelectorAll('.fp').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+// ═══ PATROL ACTIONS ═══
+function deletePatrol(id){
+  if(!confirm('Supprimer cette patrouille ?')) return;
+  const patrols=S.get('patrols')||[];
+  const units=S.get('units')||[];
+  const p=patrols.find(x=>x.id===id);
+  if(p){units.forEach(u=>{if(u.id===p.callsign){u.status='available';u.incident=null;}});}
+  S.set('patrols',patrols.filter(x=>x.id!==id));
+  S.set('units',units);
+  selectedPatrolId=null;
+  document.getElementById('patrol-detail').innerHTML=`<div class="pd-empty"><div class="pd-empty-icon">⬡</div><div class="pd-empty-txt">Sélectionner une patrouille</div></div>`;
+  render();
+  notify('Patrouille supprimée','err');
+}
+
+function returnPatrol(id){
+  const patrols=S.get('patrols')||[];
+  const units=S.get('units')||[];
+  const incidents=S.get('incidents')||[];
+  const p=patrols.find(x=>x.id===id);if(!p) return;
+  if(p.incident){const inc=incidents.find(i=>i.id===p.incident);if(inc)inc.units=inc.units.filter(x=>x!==p.callsign);S.set('incidents',incidents);}
+  const u=units.find(x=>x.id===p.callsign);
+  if(u){u.status='available';u.incident=null;}
+  p.status='available';p.incident=null;
+  S.set('patrols',patrols);S.set('units',units);
+  render();notify(`${p.callsign} — Retour à la base`,'ok');
+}
+
+function openDispatchModal(id){
+  const incidents=S.get('incidents')||[];
+  const active=incidents.filter(i=>i.status!=='closed');
+  const list=document.getElementById('inc-pick-list');
+  if(!active.length){notify('Aucun incident actif à assigner','warn');return;}
+  list.innerHTML=active.map(inc=>{
+    const c={1:'var(--red)',2:'var(--gold)',3:'var(--police)'}[inc.priority];
+    return `<div class="inc-pick-item" onclick="dispatchPatrol('${id}','${inc.id}')">
+      <span style="background:${c}18;color:${c};border:1px solid ${c}35;border-radius:3px;padding:3px 8px;font-weight:900;font-family:'Orbitron',sans-serif;font-size:9px">P${inc.priority}</span>
+      <div><div style="font-size:12px;font-weight:700;color:#fff">${inc.type}</div><div style="font-size:10px;color:var(--txt2)">📍 ${inc.address}</div></div>
+    </div>`;
+  }).join('');
+  openModal('modal-dispatch');
+}
+
+function dispatchPatrol(patrolId,incId){
+  const patrols=S.get('patrols')||[];
+  const units=S.get('units')||[];
+  const incidents=S.get('incidents')||[];
+  const p=patrols.find(x=>x.id===patrolId);if(!p) return;
+  const inc=incidents.find(x=>x.id===incId);if(!inc) return;
+  p.status='dispatched';p.incident=incId;
+  const u=units.find(x=>x.id===p.callsign);
+  if(u){u.status='dispatched';u.incident=incId;}
+  if(!inc.units.includes(p.callsign)) inc.units.push(p.callsign);
+  inc.status='active';
+  S.set('patrols',patrols);S.set('units',units);S.set('incidents',incidents);
+  closeModal('modal-dispatch');render();
+  notify(`${p.callsign} → Dépêché vers ${incId}`,'warn');
+}
+
+// ═══ WIZARD ═══
+function openWizard(){
+  wData={corps:null,vehicleType:null,personnel:[]};
+  wCurrentStep=1;
+  document.getElementById('w-callsign').value='';
+  document.getElementById('w-name').value='';
+  document.querySelectorAll('.corps-card').forEach(c=>c.classList.remove('sel'));
+  updateWizardUI();
+  openModal('modal-wizard');
+}
+
+function selectCorps(corps){
+  wData.corps=corps;wData.vehicleType=null;
+  document.querySelectorAll('.corps-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('cc-'+corps).classList.add('sel');
+}
+
+function selectVehicle(type){
+  wData.vehicleType=type;
+  document.querySelectorAll('.vc').forEach(c=>c.classList.remove('sel'));
+  const el=document.getElementById('vc-'+type);if(el) el.classList.add('sel');
+}
+
+function wStep(dir){
+  const next=wCurrentStep+dir;
+
+  if(dir>0){
+    if(wCurrentStep===1){
+      if(!wData.corps){notify('Sélectionner un corps','err');return;}
+      const cs=document.getElementById('w-callsign').value.trim();
+      if(!cs){notify('Indicatif radio requis','err');return;}
+      const units=S.get('units')||[];
+      if(units.find(u=>u.id===cs)){notify('Indicatif déjà utilisé','err');return;}
+      wData.callsign=cs;
+      wData.name=document.getElementById('w-name').value.trim()||cs;
+      wData.zone=document.getElementById('w-zone').value;
+      buildVehicleGrid();
+    }
+    if(wCurrentStep===2){
+      if(!wData.vehicleType){notify('Sélectionner un type de véhicule','err');return;}
+      buildSlotGrid();
+    }
+    if(wCurrentStep===3){
+      const slots=document.querySelectorAll('.slot-input');
+      const vt=VT[wData.corps][wData.vehicleType];
+      wData.personnel=vt.roles.map((role,i)=>({role,name:slots[i]?slots[i].value.trim():''}));
+      buildSummary();
+    }
+    if(wCurrentStep===4){confirmCreate();return;}
+  }
+
+  wCurrentStep=Math.max(1,Math.min(4,next));
+  updateWizardUI();
+}
+
+function buildVehicleGrid(){
+  const types=VT[wData.corps];
+  document.getElementById('vehicle-grid').innerHTML=Object.entries(types).map(([key,vt])=>
+    `<div class="vc" id="vc-${key}" onclick="selectVehicle('${key}')">
+      <div class="vc-icon">${vt.icon}</div>
+      <div class="vc-info">
+        <div class="vc-name">${vt.label}</div>
+        <div class="vc-seats">${vt.seats} agent${vt.seats>1?'s':''} · ${vt.roles[0]}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function buildSlotGrid(){
+  const vt=VT[wData.corps][wData.vehicleType];
+  document.getElementById('slot-grid').innerHTML=vt.roles.map((role,i)=>
+    `<div class="slot-row">
+      <span class="slot-role">${role}</span>
+      <input class="slot-input" id="slot-${i}" placeholder="Prénom NOM" autocomplete="off"/>
+    </div>`
+  ).join('');
+}
+
+function buildSummary(){
+  const vt=VT[wData.corps][wData.vehicleType];
+  const c=vt.color;
+  const filled=wData.personnel.filter(p=>p.name).length;
+  document.getElementById('summary-content').innerHTML=`
+    <div class="summary-hdr">
+      <div class="summary-hdr-icon">${vt.icon}</div>
+      <div class="summary-hdr-name">${wData.name}</div>
+      <div class="summary-hdr-sub">${wData.corps.toUpperCase()} · ${vt.label} · ${ZONES[wData.zone]?.name||wData.zone}</div>
+    </div>
+    <div class="pd-grid" style="margin-bottom:14px">
+      <div class="pd-box"><div class="pd-box-lbl">Indicatif</div><div class="pd-box-val" style="font-family:'Share Tech Mono',monospace">${wData.callsign}</div></div>
+      <div class="pd-box"><div class="pd-box-lbl">Personnel pourvu</div><div class="pd-box-val">${filled} / ${wData.personnel.length}</div></div>
+    </div>
+    <div class="pd-section-title" style="margin-bottom:10px">👥 PERSONNEL</div>
+    <div class="pers-list">
+      ${wData.personnel.map((p,i)=>{
+        const ac=AVATARS[i%AVATARS.length];
+        const initials=p.name?p.name.split(' ').filter(w=>w).map(w=>w[0]).slice(0,2).join('').toUpperCase():'?';
+        return `<div class="pers-row">
+          <div class="pers-av" style="background:${ac}18;color:${ac};border:1px solid ${ac}25">${initials}</div>
+          <div><div class="pers-name">${p.name||'<span style="color:var(--txt2);font-weight:400;font-size:10px">Non pourvu</span>'}</div><div class="pers-role">${p.role}</div></div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function updateWizardUI(){
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('ws'+i);
+    el.className='ws'+(i===wCurrentStep?' active':i<wCurrentStep?' done':'');
+  }
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('sp'+wCurrentStep).classList.add('active');
+  document.getElementById('w-back').style.display=wCurrentStep>1?'inline-flex':'none';
+  const nb=document.getElementById('w-next');
+  if(wCurrentStep===4){nb.textContent='✓ CRÉER LA PATROUILLE';} 
+  else{nb.textContent='SUIVANT →';}
+}
+
+function confirmCreate(){
+  const vt=VT[wData.corps][wData.vehicleType];
+  const base=ZONES[wData.zone].pos;
+  const pos=[base[0]+(Math.random()-.5)*.03,base[1]+(Math.random()-.5)*.03];
+  const patrols=S.get('patrols')||[];
+  const units=S.get('units')||[];
+
+  const id='PAT-'+String(patrols.length+1).padStart(3,'0');
+  patrols.push({id,callsign:wData.callsign,name:wData.name,corps:wData.corps,vehicleType:wData.vehicleType,zone:wData.zone,status:'available',incident:null,personnel:wData.personnel});
+
+  // Add as unit
+  const uType=wData.corps==='pompiers'?wData.vehicleType==='vsav'?'ambulance':'fire':'ambulance';
+  units.push({id:wData.callsign,name:wData.name,type:uType,status:'available',zone:wData.zone,pos,basePos:pos,incident:null,corps:wData.corps,vehicleType:wData.vehicleType,isHeli:wData.vehicleType==='hml'});
+
+  S.set('patrols',patrols);S.set('units',units);
+  closeModal('modal-wizard');
+  render();
+  notify(`Patrouille ${wData.callsign} créée`,'ok');
+}
+
+// ═══ MODALS ═══
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
+
+// ═══ NOTIF ═══
+function notify(msg,type='info'){
+  const w=document.getElementById('notifs');
+  const n=document.createElement('div');
+  n.className=`notif n-${type}`;n.textContent=msg;
+  w.appendChild(n);setTimeout(()=>n.remove(),4500);
+}
+
+// ═══ SYNC ═══
+window.addEventListener('storage',e=>{if(e.key==='c112_ts') render();});
+setInterval(render,5000);
+
+// ═══ BOOT ═══
+window.addEventListener('load',()=>{
+  if(!S.get('units')){window.location.href='map.html';return;}
+  render();
+});
+</script>
+</body>
+</html>
