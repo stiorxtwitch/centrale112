@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Carte — Centrale 112 Liège</title>
+<title>Carte — Centrale 112</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
@@ -19,7 +19,6 @@
 }
 body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
-/* TOPBAR */
 .topbar{height:54px;background:var(--panel);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 16px;gap:16px;flex-shrink:0;z-index:900}
 .logo{width:38px;height:38px;background:linear-gradient(135deg,#cc1111,#880000);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:11px;font-weight:900;color:#fff;box-shadow:0 0 14px rgba(200,30,30,.45);flex-shrink:0}
 .brand{flex:0 0 auto}
@@ -35,7 +34,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 .online-badge::before{content:'● ';animation:blink 1.4s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
 
-/* NAV */
 .nav{height:40px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0;z-index:899}
 .nav a{display:flex;align-items:center;gap:6px;padding:0 22px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);text-decoration:none;border-bottom:2px solid transparent;transition:all .18s}
 .nav a:hover{color:var(--txt);background:rgba(255,255,255,.02)}
@@ -43,11 +41,9 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 .nav-divider{width:1px;background:var(--border);margin:6px 0}
 .nav-badge{background:var(--red);color:#fff;border-radius:8px;padding:0 6px;font-size:9px;line-height:16px}
 
-/* LAYOUT */
 .layout{flex:1;overflow:hidden;display:flex;min-height:0}
 #map{flex:1;z-index:1}
 
-/* SIDEBAR */
 .sidebar{width:288px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:2;overflow:hidden}
 .sb-filters{padding:8px;display:flex;gap:4px;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
 .sf{flex:1;padding:5px;font-size:10px;font-weight:700;letter-spacing:1px;border-radius:3px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt2);font-family:'Rajdhani',sans-serif;text-transform:uppercase;transition:all .2s;text-align:center}
@@ -70,7 +66,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 .tag-dispo{background:rgba(0,212,160,.1);color:var(--amb);border:1px solid rgba(0,212,160,.2)}
 .tag-dep{background:rgba(255,64,64,.1);color:var(--fire);border:1px solid rgba(255,64,64,.2)}
 .tag-route{background:rgba(255,184,0,.1);color:var(--gold);border:1px solid rgba(255,184,0,.2);animation:blink .8s infinite}
-.tag-att{background:rgba(255,184,0,.08);color:var(--gold);border:1px solid rgba(255,184,0,.15)}
 .tag-hs{background:rgba(80,110,140,.1);color:var(--txt2);border:1px solid var(--border)}
 .sb-actions{padding:10px;flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
 .btn{padding:8px 16px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;text-transform:uppercase;transition:all .2s}
@@ -80,21 +75,18 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 .btn-ghost:hover{border-color:var(--txt);color:var(--txt)}
 .btn-w{width:100%}
 
-/* LEGEND */
 .legend{position:absolute;bottom:22px;left:12px;z-index:600;background:rgba(6,16,26,.93);border:1px solid var(--border2);border-radius:5px;padding:9px 12px;pointer-events:none}
 .lg-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:10px;color:var(--txt2)}
 .lg-row:last-child{margin-bottom:0}
 .lg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .lg-sq{width:10px;height:8px;border-radius:2px;flex-shrink:0}
 
-/* ROUTE INFO */
 .route-panel{padding:8px 12px;background:rgba(255,184,0,.05);border-bottom:1px solid var(--border);font-size:10px;display:none}
 .route-panel.show{display:block}
 .rp-row{display:flex;justify-content:space-between;margin-bottom:2px}
 .rp-lbl{color:var(--txt2)}
 .rp-val{font-family:'Share Tech Mono',monospace;color:var(--gold)}
 
-/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(2,6,9,.88);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .modal-overlay.open{display:flex}
 .modal{background:var(--panel);border:1px solid var(--border2);border-radius:7px;width:520px;max-height:82vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.9)}
@@ -123,7 +115,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 .uc-a{background:rgba(0,212,160,.12);color:var(--amb);border:1px solid rgba(0,212,160,.2)}
 .uc-h{background:rgba(192,132,252,.12);color:var(--heli);border:1px solid rgba(192,132,252,.2)}
 
-/* NOTIF */
 .notifs{position:fixed;top:60px;right:14px;z-index:9000;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .notif{padding:10px 14px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:260px;border-left:3px solid;animation:slideIn .22s ease;font-family:'Rajdhani',sans-serif;text-transform:uppercase}
 @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
@@ -132,25 +123,25 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 .n-info{background:rgba(59,158,255,.1);border-color:var(--police);color:var(--police)}
 .n-warn{background:rgba(255,184,0,.1);border-color:var(--gold);color:var(--gold)}
 
-/* Leaflet overrides */
 .leaflet-popup-content-wrapper{background:var(--panel2)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--txt)!important;box-shadow:0 8px 24px rgba(0,0,0,.7)!important}
 .leaflet-popup-tip{background:var(--panel2)!important}
 .leaflet-popup-content{margin:9px 13px!important;font-family:'Rajdhani',sans-serif!important}
 .leaflet-control-zoom a{background:var(--panel2)!important;color:var(--txt)!important;border-bottom:1px solid var(--border)!important}
 .leaflet-control-zoom a:hover{background:var(--panel3)!important;color:#fff!important}
 
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,50,50,.7)}100%{box-shadow:0 0 0 16px rgba(255,50,50,0)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,50,50,.7)}100%{box-shadow:0 0 0 16px rgba(255,50,50,0)}}
 .pulse-anim{animation:pulse 1.6s infinite}
+
+.empty-sidebar{padding:18px;text-align:center;color:var(--txt3);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;line-height:1.8}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="logo">112</div>
   <div class="brand">
     <div class="brand-main">CENTRALE D'URGENCE</div>
-    <div class="brand-sub">PROVINCE DE LIÈGE</div>
+    <div class="brand-sub">DISPATCH CENTER</div>
   </div>
   <div class="topbar-stats">
     <div class="ts"><div class="ts-val" id="st-active" style="color:var(--red)">0</div><div class="ts-lbl">Incidents actifs</div></div>
@@ -163,7 +154,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
   </div>
 </div>
 
-<!-- NAV -->
 <div class="nav">
   <a href="map.html" class="active">▦ CARTE</a>
   <div class="nav-divider"></div>
@@ -172,7 +162,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
   <a href="patrouille.html">⬡ PATROUILLES <span class="nav-badge" id="nav-pat-badge">0</span></a>
 </div>
 
-<!-- LAYOUT -->
 <div class="layout">
   <div id="map">
     <div class="legend">
@@ -213,7 +202,6 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
   </div>
 </div>
 
-<!-- NOTIFS -->
 <div class="notifs" id="notifs"></div>
 
 <!-- MODAL: NOUVEL INCIDENT -->
@@ -238,19 +226,19 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
           </select>
         </div>
       </div>
-      <div class="fg"><label class="fl">Adresse</label><input class="fi" id="f-addr" placeholder="Ex: E40 sortie Ans, Liège"/></div>
+      <div class="fg"><label class="fl">Adresse</label><input class="fi" id="f-addr" placeholder="Ex: Rockford Hills, Vinewood Blvd..."/></div>
       <div class="frow">
-        <div class="fg"><label class="fl">Commune</label>
+        <div class="fg"><label class="fl">Quartier / Zone</label>
           <select class="fs" id="f-zone">
-            <option value="liege_centre">Liège Centre</option>
-            <option value="liege_nord">Liège Nord / Ans</option>
-            <option value="seraing">Seraing</option>
-            <option value="verviers">Verviers</option>
-            <option value="huy">Huy</option>
-            <option value="waremme">Waremme</option>
-            <option value="spa">Spa</option>
-            <option value="vise">Visé</option>
-            <option value="herve">Herve</option>
+            <option value="downtown">Downtown LS</option>
+            <option value="vinewood">Vinewood</option>
+            <option value="sandy">Sandy Shores</option>
+            <option value="paleto">Paleto Bay</option>
+            <option value="grapeseed">Grapeseed</option>
+            <option value="port">Port de LS</option>
+            <option value="del_perro">Del Perro</option>
+            <option value="rockford">Rockford Hills</option>
+            <option value="lsia">Aéroport LSIA</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Requérant</label><input class="fi" id="f-caller" placeholder="Nom (optionnel)"/></div>
@@ -280,18 +268,18 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
           </select>
         </div>
       </div>
-      <div class="fg"><label class="fl">Nom de l'unité</label><input class="fi" id="u-name" placeholder="Ex: Patrouille Liège Centre"/></div>
+      <div class="fg"><label class="fl">Nom de l'unité</label><input class="fi" id="u-name" placeholder="Ex: Patrouille Downtown"/></div>
       <div class="fg"><label class="fl">Secteur</label>
         <select class="fs" id="u-zone">
-          <option value="liege_centre">Liège Centre</option>
-          <option value="liege_nord">Liège Nord / Ans</option>
-          <option value="seraing">Seraing</option>
-          <option value="verviers">Verviers</option>
-          <option value="huy">Huy</option>
-          <option value="waremme">Waremme</option>
-          <option value="spa">Spa</option>
-          <option value="vise">Visé</option>
-          <option value="herve">Herve</option>
+          <option value="downtown">Downtown LS</option>
+          <option value="vinewood">Vinewood</option>
+          <option value="sandy">Sandy Shores</option>
+          <option value="paleto">Paleto Bay</option>
+          <option value="grapeseed">Grapeseed</option>
+          <option value="port">Port de LS</option>
+          <option value="del_perro">Del Perro</option>
+          <option value="rockford">Rockford Hills</option>
+          <option value="lsia">Aéroport LSIA</option>
         </select>
       </div>
     </div>
@@ -304,19 +292,43 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);hei
 
 <script>
 // ═══════════════════════════════════════════════════
-//  SHARED CONSTANTS
+//  GTA 5 MAP CONFIG
+//  Tiles from https://github.com/nicowillis/gta5map
+//  CRS.Simple — coordonnées pixel → custom LatLng
 // ═══════════════════════════════════════════════════
+
+// La map GTA 5 fait ~8192×8192px en tiles
+// On mappe l'espace GTA sur un CRS Simple Leaflet
+// Coins de la map: top-left=[0,0] bottom-right=[8192,8192]
+// On utilise un plan de coordonnées inversé pour que
+// le sud de la map = lat basse (comme une vraie carte)
+
+const GTA_SIZE = 8192;
+
+// Zones GTA 5 (coordonnées pixel approximatives sur la map)
 const ZONES = {
-  liege_centre:{name:'Liège Centre',pos:[50.6451,5.5734]},
-  liege_nord:{name:'Liège Nord / Ans',pos:[50.6650,5.5270]},
-  seraing:{name:'Seraing',pos:[50.5980,5.5070]},
-  verviers:{name:'Verviers',pos:[50.5890,5.8640]},
-  huy:{name:'Huy',pos:[50.5160,5.2380]},
-  waremme:{name:'Waremme',pos:[50.7000,5.2580]},
-  spa:{name:'Spa',pos:[50.4920,5.8700]},
-  vise:{name:'Visé',pos:[50.7390,5.7060]},
-  herve:{name:'Herve',pos:[50.6380,5.7980]}
+  downtown:  {name:'Downtown LS',     pos:[3900, 3100]}, // centre-ville
+  vinewood:  {name:'Vinewood',        pos:[3300, 2600]},
+  sandy:     {name:'Sandy Shores',    pos:[5900, 2800]},
+  paleto:    {name:'Paleto Bay',      pos:[1500, 700]},
+  grapeseed: {name:'Grapeseed',       pos:[5400, 2300]},
+  port:      {name:'Port de LS',      pos:[4200, 4100]},
+  del_perro: {name:'Del Perro',       pos:[2700, 3500]},
+  rockford:  {name:'Rockford Hills',  pos:[3100, 3000]},
+  lsia:      {name:'Aéroport LSIA',   pos:[3500, 4200]},
 };
+
+// Conversion pixel GTA → LatLng Leaflet (CRS.Simple)
+// Dans Leaflet CRS.Simple: lat=y inversé, lng=x
+function gtaToLatLng(px, py) {
+  // On normalise sur une échelle où 1 unité = 1 pixel
+  // lat positif = haut de la map (nord GTA)
+  return [(GTA_SIZE - py) / 16, px / 16];
+}
+
+function latLngToGta(lat, lng) {
+  return [lng * 16, GTA_SIZE - lat * 16];
+}
 
 const VT = {
   pompiers:{
@@ -341,33 +353,10 @@ const S = {
 };
 
 function initData() {
-  if (!S.get('units')) S.set('units', [
-    {id:'PL-01',name:'Patrouille Liège Alpha',type:'police',status:'dispatched',zone:'liege_centre',pos:[50.6430,5.5710],basePos:[50.6430,5.5710],incident:'INC001',corps:null,vehicleType:null,isHeli:false},
-    {id:'PL-02',name:'Patrouille Liège Beta',type:'police',status:'available',zone:'liege_nord',pos:[50.6650,5.5270],basePos:[50.6650,5.5270],incident:null,corps:null,vehicleType:null,isHeli:false},
-    {id:'PL-03',name:'Patrouille Seraing',type:'police',status:'available',zone:'seraing',pos:[50.5980,5.5070],basePos:[50.5980,5.5070],incident:null,corps:null,vehicleType:null,isHeli:false},
-    {id:'PL-04',name:'Brigade Verviers',type:'police',status:'available',zone:'verviers',pos:[50.5890,5.8640],basePos:[50.5890,5.8640],incident:null,corps:null,vehicleType:null,isHeli:false},
-    {id:'PL-05',name:'Patrouille Huy',type:'police',status:'available',zone:'huy',pos:[50.5160,5.2380],basePos:[50.5160,5.2380],incident:null,corps:null,vehicleType:null,isHeli:false},
-    {id:'F-01',name:'Caserne Belle-Île — Pompe 1',type:'fire',status:'dispatched',zone:'liege_centre',pos:[50.6280,5.5550],basePos:[50.6280,5.5550],incident:'INC001',corps:'pompiers',vehicleType:'pompe',isHeli:false},
-    {id:'F-02',name:'Caserne Grivegnée — Balisage',type:'fire',status:'available',zone:'liege_centre',pos:[50.6250,5.6150],basePos:[50.6250,5.6150],incident:null,corps:'pompiers',vehicleType:'balisage',isHeli:false},
-    {id:'F-03',name:'Caserne Verviers — Pompe',type:'fire',status:'available',zone:'verviers',pos:[50.5910,5.8620],basePos:[50.5910,5.8620],incident:null,corps:'pompiers',vehicleType:'pompe',isHeli:false},
-    {id:'F-04',name:'Caserne Huy — Échelle EPA',type:'fire',status:'available',zone:'huy',pos:[50.5170,5.2400],basePos:[50.5170,5.2400],incident:null,corps:'pompiers',vehicleType:'echelle',isHeli:false},
-    {id:'F-05',name:'Caserne Spa — VSAV',type:'fire',status:'available',zone:'spa',pos:[50.4930,5.8690],basePos:[50.4930,5.8690],incident:null,corps:'pompiers',vehicleType:'vsav',isHeli:false},
-    {id:'A-01',name:'SMUR CHU Sart Tilman',type:'ambulance',status:'dispatched',zone:'liege_centre',pos:[50.5830,5.5710],basePos:[50.5830,5.5710],incident:'INC002',corps:'chl',vehicleType:'smur',isHeli:false},
-    {id:'A-02',name:'SMUR Citadelle Liège',type:'ambulance',status:'available',zone:'liege_centre',pos:[50.6520,5.5680],basePos:[50.6520,5.5680],incident:null,corps:'chl',vehicleType:'smur',isHeli:false},
-    {id:'A-03',name:'Ambulance Huy',type:'ambulance',status:'available',zone:'huy',pos:[50.5150,5.2390],basePos:[50.5150,5.2390],incident:null,corps:'chl',vehicleType:'ambulance',isHeli:false},
-    {id:'A-04',name:'Ambulance Waremme',type:'ambulance',status:'available',zone:'waremme',pos:[50.7000,5.2580],basePos:[50.7000,5.2580],incident:null,corps:'chl',vehicleType:'ambulance',isHeli:false},
-    {id:'HML-1',name:'Hélicoptère Médical Bierset',type:'ambulance',status:'available',zone:'liege_nord',pos:[50.6370,5.4460],basePos:[50.6370,5.4460],incident:null,corps:'chl',vehicleType:'hml',isHeli:true},
-  ]);
-  if (!S.get('incidents')) S.set('incidents', [
-    {id:'INC001',type:'Accident de la route',priority:1,address:'E40 sortie Ans / Loncin',zone:'liege_nord',desc:'Carambolage 3 véhicules dont un poids lourd. 2 blessés graves. Voie bloquée direction Bruxelles.',pos:[50.6600,5.5100],status:'active',units:['PL-01','F-01'],time:Date.now()-22*60000,caller:'M. Pirard (automobiliste)'},
-    {id:'INC002',type:'Malaise / Urgence médicale',priority:2,address:'Rue des Wallons 12, Verviers',zone:'verviers',desc:'Homme 58 ans inconscient. Arrêt cardiaque suspecté. RCP en cours par passant.',pos:[50.5930,5.8610],status:'active',units:['A-01'],time:Date.now()-9*60000,caller:'Mme. Collin (voisine)'},
-    {id:'INC003',type:'Cambriolage',priority:3,address:'Av. de la Libération 44, Huy',zone:'huy',desc:'Cambriolage en cours. Porte fracturée. Suspects peut-être encore présents.',pos:[50.5180,5.2430],status:'pending',units:[],time:Date.now()-4*60000,caller:'M. Renard (voisin)'},
-  ]);
-  if (!S.get('patrols')) S.set('patrols', [
-    {id:'PAT-001',callsign:'F-01',name:'Caserne Belle-Île — Pompe 1',corps:'pompiers',vehicleType:'pompe',zone:'liege_centre',status:'dispatched',incident:'INC001',personnel:[{role:'Chef d\'agrès',name:'Sgt. Martin Bernard'},{role:'Pilote',name:'Cpl. Pierre Dumont'},{role:'Sapeur-pompier',name:'Sdt. Julien Leroy'},{role:'Sapeur-pompier',name:'Sdt. François Bastin'},{role:'Sapeur-pompier',name:'Sdt. Marc Renard'},{role:'Sapeur-pompier',name:'Sdt. Kevin Masson'}]},
-    {id:'PAT-002',callsign:'A-01',name:'SMUR CHU Sart Tilman',corps:'chl',vehicleType:'smur',zone:'liege_centre',status:'dispatched',incident:'INC002',personnel:[{role:'Médecin urgentiste',name:'Dr. Sophie Willems'},{role:'Infirmier SMUR',name:'Inf. Thomas Collignon'},{role:'Ambulancier SMUR',name:'Amb. Kévin Masson'}]},
-    {id:'PAT-003',callsign:'HML-1',name:'Hélicoptère Médical Bierset',corps:'chl',vehicleType:'hml',zone:'liege_nord',status:'available',incident:null,personnel:[{role:'Pilote',name:'Cdt. Erik Leclercq'},{role:'Co-pilote',name:'Adj. Nina Baudin'},{role:'Médecin urgentiste',name:'Dr. Antoine Masson'},{role:'Infirmier SMUR',name:'Inf. Julie Poncelet'}]},
-  ]);
+  // Aucune donnée exemple — on part de zéro
+  if (!S.get('units'))     S.set('units',     []);
+  if (!S.get('incidents')) S.set('incidents', []);
+  if (!S.get('patrols'))   S.set('patrols',   []);
 }
 
 // ═══════════════════════════════════════════════════
@@ -376,17 +365,45 @@ function initData() {
 setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':')},1000);
 
 // ═══════════════════════════════════════════════════
-//  MAP
+//  MAP GTA 5
 // ═══════════════════════════════════════════════════
 let map, uMarkers={}, iMarkers={}, routeLines={}, animations={};
 let filterType = 'all';
 let lastTs = 0;
 
 function initMap() {
-  map = L.map('map',{zoomControl:true,preferCanvas:true}).setView([50.63,5.58],11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    attribution:'© OpenStreetMap © CARTO',maxZoom:19,subdomains:'abcd'
+  // CRS Simple pour une image plane (pas de projection sphérique)
+  const bounds = [[0,0],[GTA_SIZE/16, GTA_SIZE/16]];
+
+  map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -2,
+    maxZoom: 5,
+    zoomControl: true,
+    attributionControl: false
+  });
+
+  // Tiles GTA 5 — source publique
+  // On utilise le tile server de rage.mp / gtamap
+  // Format: z/x/y.jpg  — zoom 0 à 7
+  // URL principale: https://tiles.gta5map.com/{z}/{x}/{y}.jpg
+  // Fallback: image complète si tiles indispo
+  L.tileLayer('https://tiles.gta5map.com/{z}/{x}/{y}.jpg', {
+    noWrap: true,
+    tileSize: 256,
+    minZoom: -2,
+    maxZoom: 7,
+    bounds: bounds,
+    errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
   }).addTo(map);
+
+  // Vue initiale centrée sur Downtown LS
+  map.setView(gtaToLatLng(3900, 3500), 1);
+
+  // Fond de secours si tiles ne chargent pas
+  map.on('tileerror', function() {
+    // Fond sombre de fallback déjà présent via CSS bg
+  });
 }
 
 function uColor(u) {
@@ -419,16 +436,17 @@ function renderMap() {
   const units = S.get('units')||[];
   const incidents = S.get('incidents')||[];
 
-  // Remove old markers
   Object.values(uMarkers).forEach(m=>map.removeLayer(m));
   Object.values(iMarkers).forEach(m=>map.removeLayer(m));
   uMarkers={}; iMarkers={};
 
-  // Units
+  // Unités
   units.forEach(u=>{
     if(filterType!=='all'&&u.type!==filterType) return;
     const moving = !!animations[u.id];
-    const m = L.marker(u.pos,{icon:makeUIcon(u,moving),zIndexOffset:u.status==='dispatched'?100:0}).addTo(map);
+    // u.pos est en coordonnées GTA pixel [px,py]
+    const latlng = gtaToLatLng(u.pos[0], u.pos[1]);
+    const m = L.marker(latlng,{icon:makeUIcon(u,moving),zIndexOffset:u.status==='dispatched'?100:0}).addTo(map);
     const vtLabel = u.vehicleType&&u.corps?(VT[u.corps]?.[u.vehicleType]?.label||''):'';
     const sLabel = {available:'🟢 Disponible',dispatched:'🔴 Dépêché',out_of_service:'⚫ H.S.'}[u.status]||u.status;
     m.bindPopup(`<div style="min-width:180px"><b style="font-size:14px;color:#fff">${u.id}</b><br><span style="color:#7a9ab0;font-size:11px">${u.name}</span><hr style="border-color:#1c3048;margin:5px 0"><div style="font-size:12px">${sLabel}</div>${vtLabel?`<div style="font-size:11px;color:#7a9ab0">${vtLabel}</div>`:''}${u.incident?`<div style="font-size:11px;color:#ffb800;margin-top:4px">→ ${u.incident}</div>`:''}${moving?`<div style="font-size:11px;color:#ffb800;margin-top:2px">🔄 En route...</div>`:''}</div>`);
@@ -438,7 +456,8 @@ function renderMap() {
   // Incidents
   incidents.forEach(inc=>{
     if(inc.status==='closed') return;
-    const m=L.marker(inc.pos,{icon:makeIIcon(inc),zIndexOffset:500}).addTo(map);
+    const latlng = gtaToLatLng(inc.pos[0], inc.pos[1]);
+    const m=L.marker(latlng,{icon:makeIIcon(inc),zIndexOffset:500}).addTo(map);
     m.bindPopup(`<div style="min-width:180px"><b style="font-size:13px;color:#fff">${inc.id}</b><br><span style="color:#ffb800;font-size:12px">${inc.type}</span><hr style="border-color:#1c3048;margin:5px 0"><span style="color:#7a9ab0;font-size:11px">📍 ${inc.address}</span><br><span style="font-size:11px">Unités: <b>${inc.units.join(', ')||'Aucune'}</b></span></div>`);
     iMarkers[inc.id]=m;
   });
@@ -457,26 +476,26 @@ function renderSidebar() {
     const el=Math.floor((Date.now()-inc.time)/60000);
     const tag=inc.status==='active'?'tag-dep':'tag-att';
     const lbl=inc.status==='active'?'ACTIF':'ATTENTE';
-    return `<div class="sb-item" onclick="flyTo(${inc.pos[0]},${inc.pos[1]},'${inc.id}','inc')">
+    return `<div class="sb-item" onclick="flyToInc('${inc.id}')">
       <div class="sb-dot" style="background:${c};box-shadow:0 0 6px ${c}"></div>
       <div class="sb-info"><div class="sb-name">${inc.type}</div><div class="sb-sub">${inc.address.substring(0,28)}… · ${el}min</div></div>
       <span class="sb-tag ${tag}">${lbl}</span>
     </div>`;
-  }).join(''):'<div style="padding:14px;text-align:center;color:var(--txt2);font-size:10px;letter-spacing:2px">AUCUN INCIDENT ACTIF</div>';
+  }).join(''):'<div class="empty-sidebar">Aucun incident actif</div>';
 
   const filt = filterType==='all'?units:units.filter(u=>u.type===filterType);
   document.getElementById('cnt-units').textContent = filt.length;
-  document.getElementById('list-units').innerHTML = filt.map(u=>{
+  document.getElementById('list-units').innerHTML = filt.length?filt.map(u=>{
     const c=uColor(u);
     const moving=!!animations[u.id];
     const tag=moving?'tag-route':u.status==='available'?'tag-dispo':u.status==='dispatched'?'tag-dep':'tag-hs';
     const lbl=moving?'EN ROUTE':u.status==='available'?'DISPO':u.status==='dispatched'?'DÉPÊCHÉ':'H.S.';
-    return `<div class="sb-item" onclick="flyTo(${u.pos[0]},${u.pos[1]},'${u.id}','unit')">
+    return `<div class="sb-item" onclick="flyToUnit('${u.id}')">
       <div class="sb-dot" style="background:${c};box-shadow:0 0 5px ${c}"></div>
       <div class="sb-info"><div class="sb-name">${u.id} — ${u.name.substring(0,20)}</div><div class="sb-sub">${ZONES[u.zone]?.name||u.zone}${u.incident?' · '+u.incident:''}</div></div>
       <span class="sb-tag ${tag}">${lbl}</span>
     </div>`;
-  }).join('');
+  }).join(''):'<div class="empty-sidebar">Aucune unité<br>Ajoutez des patrouilles via<br>l\'onglet Patrouilles</div>';
 }
 
 function updateStats() {
@@ -488,12 +507,20 @@ function updateStats() {
   document.getElementById('nav-pat-badge').textContent=patrols.length;
 }
 
-function flyTo(lat,lng,id,kind) {
-  map.flyTo([lat,lng],15,{animate:true,duration:1.2});
-  setTimeout(()=>{
-    const m=kind==='inc'?iMarkers[id]:uMarkers[id];
-    if(m) m.openPopup();
-  },1300);
+function flyToInc(id) {
+  const incidents=S.get('incidents')||[];
+  const inc=incidents.find(x=>x.id===id); if(!inc) return;
+  const latlng=gtaToLatLng(inc.pos[0],inc.pos[1]);
+  map.flyTo(latlng,3,{animate:true,duration:1.2});
+  setTimeout(()=>{if(iMarkers[id]) iMarkers[id].openPopup();},1300);
+}
+
+function flyToUnit(id) {
+  const units=S.get('units')||[];
+  const u=units.find(x=>x.id===id); if(!u) return;
+  const latlng=gtaToLatLng(u.pos[0],u.pos[1]);
+  map.flyTo(latlng,3,{animate:true,duration:1.2});
+  setTimeout(()=>{if(uMarkers[id]) uMarkers[id].openPopup();},1300);
 }
 
 function setFilter(type,btn) {
@@ -504,22 +531,23 @@ function setFilter(type,btn) {
 }
 
 // ═══════════════════════════════════════════════════
-//  OSRM ROUTING + ANIMATION
+//  ROUTING ANIMATION (pixel space)
 // ═══════════════════════════════════════════════════
-async function fetchRoute(from, to) {
-  try {
-    const url=`https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?geometries=geojson&overview=full&steps=false`;
-    const res=await fetch(url,{signal:AbortSignal.timeout(7000)});
-    const data=await res.json();
-    if(data.code==='Ok'&&data.routes.length) {
-      const pts=data.routes[0].geometry.coordinates.map(([lng,lat])=>[lat,lng]);
-      return {pts, dist:data.routes[0].distance, dur:data.routes[0].duration};
-    }
-  } catch(e) {}
-  // Fallback: straight line with extra points
-  const pts=[], N=50;
-  for(let i=0;i<=N;i++){const t=i/N;pts.push([from[0]+(to[0]-from[0])*t,from[1]+(to[1]-from[1])*t]);}
-  return {pts, dist:null, dur:null};
+async function fetchRoute(fromPx, toPx) {
+  // Chemin direct interpolé en coordonnées pixel GTA
+  // (OSRM ne fonctionne pas sur GTA, donc interpolation linéaire)
+  const pts=[];
+  const N=80;
+  for(let i=0;i<=N;i++){
+    const t=i/N;
+    pts.push([
+      fromPx[0]+(toPx[0]-fromPx[0])*t,
+      fromPx[1]+(toPx[1]-fromPx[1])*t
+    ]);
+  }
+  const dx=toPx[0]-fromPx[0], dy=toPx[1]-fromPx[1];
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  return {pts, dist, dur: dist/100}; // ~dist pixel → minutes approx
 }
 
 async function startDispatch(unitId, incidentId, showRouteInfo=false) {
@@ -532,26 +560,25 @@ async function startDispatch(unitId, incidentId, showRouteInfo=false) {
   notify(`${unitId} → En route vers ${incidentId}`,'warn');
   const {pts, dist, dur}=await fetchRoute(u.pos, inc.pos);
 
-  // Draw route line
   if(routeLines[unitId]) map.removeLayer(routeLines[unitId]);
   const c=uColor(u);
-  routeLines[unitId]=L.polyline(pts,{color:c,weight:2,opacity:.55,dashArray:'7,5'}).addTo(map);
+  // Convertir les points pixel en LatLng pour Leaflet
+  const latlngPts=pts.map(p=>gtaToLatLng(p[0],p[1]));
+  routeLines[unitId]=L.polyline(latlngPts,{color:c,weight:2,opacity:.55,dashArray:'7,5'}).addTo(map);
 
-  // Animation: normalize to ~30 second travel
-  const ticks=300; // 30s @ 100ms
+  const ticks=300;
   const stepSize=Math.max(pts.length/ticks,0.04);
   animations[unitId]={pts, index:0, progress:0, stepSize, incidentId, dist, dur};
 
   if(showRouteInfo&&dist) {
     document.getElementById('route-panel').classList.add('show');
     document.getElementById('rp-unit').textContent=unitId;
-    document.getElementById('rp-dist').textContent=dist?`${(dist/1000).toFixed(1)} km`:'—';
-    document.getElementById('rp-eta').textContent=dur?`~${Math.ceil(dur/60)} min`:'—';
+    document.getElementById('rp-dist').textContent=`${(dist/100).toFixed(1)} km`;
+    document.getElementById('rp-eta').textContent=`~${Math.ceil(dur)} min`;
   }
   updateStats();
 }
 
-// Animation tick at 10fps
 setInterval(()=>{
   if(!Object.keys(animations).length) return;
   const units=S.get('units')||[];
@@ -562,7 +589,6 @@ setInterval(()=>{
     while(anim.progress>=1&&anim.index<anim.pts.length-1){anim.progress-=1;anim.index++;}
 
     if(anim.index>=anim.pts.length-1){
-      // Arrived
       const u=units.find(x=>x.id===uid);
       if(u) u.pos=[...anim.pts[anim.pts.length-1]];
       delete animations[uid];
@@ -576,13 +602,13 @@ setInterval(()=>{
     const from=anim.pts[anim.index];
     const to=anim.pts[Math.min(anim.index+1,anim.pts.length-1)];
     const t=Math.min(anim.progress,1);
-    const newPos=[from[0]+(to[0]-from[0])*t, from[1]+(to[1]-from[1])*t];
+    const newPosPx=[from[0]+(to[0]-from[0])*t, from[1]+(to[1]-from[1])*t];
 
     const u=units.find(x=>x.id===uid);
-    if(u) u.pos=newPos;
+    if(u) u.pos=newPosPx;
 
     if(uMarkers[uid]){
-      uMarkers[uid].setLatLng(newPos);
+      uMarkers[uid].setLatLng(gtaToLatLng(newPosPx[0],newPosPx[1]));
       uMarkers[uid].setIcon(makeUIcon(u,true));
     }
     changed=true;
@@ -600,17 +626,14 @@ setInterval(()=>{
 window.addEventListener('storage',e=>{
   if(e.key!=='c112_ts') return;
   const units=S.get('units')||[];
-  // Check for newly dispatched units
   units.forEach(u=>{
     if(u.status==='dispatched'&&u.incident&&!animations[u.id]&&!routeLines[u.id]) {
-      // New dispatch from another tab
       startDispatch(u.id, u.incident);
     }
   });
   renderMap();
 });
 
-// Periodic sync check
 setInterval(()=>{
   const ts=parseInt(localStorage.getItem('c112_ts')||0);
   if(ts>lastTs){lastTs=ts; renderSidebar(); updateStats();}
@@ -641,11 +664,16 @@ async function createInc() {
   const desc=document.getElementById('f-desc').value||'—';
   const caller=document.getElementById('f-caller').value||null;
   const sel=[...document.querySelectorAll('#f-units .ug-item.sel')].map(el=>el.dataset.uid);
+
   const base=ZONES[zone].pos;
-  const pos=[base[0]+(Math.random()-.5)*.06, base[1]+(Math.random()-.5)*.06];
+  // Position pixel GTA avec léger décalage aléatoire
+  const pos=[
+    base[0]+(Math.random()-.5)*400,
+    base[1]+(Math.random()-.5)*400
+  ];
 
   const incidents=S.get('incidents')||[];
-  const incId='INC'+String(incidents.length+4).padStart(3,'0');
+  const incId='INC'+String(incidents.length+1).padStart(3,'0');
   incidents.push({id:incId,type,priority:prio,address:addr,zone,desc,pos,status:sel.length?'active':'pending',units:sel,time:Date.now(),caller});
   S.set('incidents',incidents);
 
@@ -661,8 +689,8 @@ async function createInc() {
   document.getElementById('f-desc').value='';
   document.getElementById('f-caller').value='';
 
-  // Fly to incident and start routing animations
-  map.flyTo(pos,13,{animate:true,duration:1.2});
+  const latlng=gtaToLatLng(pos[0],pos[1]);
+  map.flyTo(latlng,3,{animate:true,duration:1.2});
   setTimeout(()=>{renderMap();},200);
   for(const uid of sel) await startDispatch(uid,incId,true);
   notify(`Incident ${incId} créé — P${prio}`,prio===1?'err':prio===2?'warn':'info');
@@ -677,7 +705,7 @@ function addUnit() {
   const units=S.get('units')||[];
   if(units.find(u=>u.id===id)){notify('Indicatif déjà utilisé','err');return;}
   const base=ZONES[zone].pos;
-  const pos=[base[0]+(Math.random()-.5)*.03,base[1]+(Math.random()-.5)*.03];
+  const pos=[base[0]+(Math.random()-.5)*200, base[1]+(Math.random()-.5)*200];
   units.push({id,name,type,status:'available',zone,pos,basePos:pos,incident:null,corps:null,vehicleType:null,isHeli:false});
   S.set('units',units);
   closeModal('modal-unit');
@@ -713,7 +741,6 @@ window.addEventListener('load',async ()=>{
   renderMap();
   lastTs=parseInt(localStorage.getItem('c112_ts')||0);
 
-  // Start animations for already-dispatched units
   const units=S.get('units')||[];
   const dispatched=units.filter(u=>u.status==='dispatched'&&u.incident);
   for(const u of dispatched) {
