@@ -2,11 +2,10 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Dispatch — Los Santos</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -16,74 +15,59 @@
   --txt:#b0c8e4;--txt2:#527090;--txt3:#2e4a66;
   --gold:#ffb800;--red:#ff3333;
 }
-html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;background:#0a0a0a;color:var(--txt)}
-
-.topbar{height:50px;background:var(--panel);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 14px;gap:12px;flex-shrink:0}
-.logo{width:36px;height:36px;background:linear-gradient(135deg,#cc1111,#880000);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:10px;font-weight:900;color:#fff;box-shadow:0 0 14px rgba(200,30,30,.5);flex-shrink:0}
-.brand-main{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;color:#fff}
-.brand-sub{font-size:9px;color:var(--txt2);letter-spacing:2px}
-.topbar-stats{display:flex;gap:6px;flex:1;justify-content:center}
-.ts{padding:4px 12px;border-radius:3px;border:1px solid var(--border2);text-align:center;min-width:68px}
-.ts-val{font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;line-height:1}
-.ts-lbl{font-size:8px;color:var(--txt2);letter-spacing:1.5px;text-transform:uppercase}
-.clock{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--gold);letter-spacing:2px;flex-shrink:0}
-.dot-live{width:7px;height:7px;border-radius:50%;background:var(--amb);box-shadow:0 0 8px var(--amb);animation:blink 1.4s infinite;flex-shrink:0}
+html,body{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:var(--txt)}
+.topbar{height:46px;background:var(--panel);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.logo{width:32px;height:32px;background:linear-gradient(135deg,#cc1111,#880000);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;flex-shrink:0}
+.brand{font-size:11px;font-weight:700;letter-spacing:2px;color:#fff}
+.brand-sub{font-size:8px;color:var(--txt2);letter-spacing:1.5px}
+.stats{display:flex;gap:4px;flex:1;justify-content:center}
+.st{padding:3px 10px;border-radius:3px;border:1px solid var(--border2);text-align:center;min-width:60px}
+.st-v{font-size:15px;font-weight:700;line-height:1;font-family:monospace}
+.st-l{font-size:7px;color:var(--txt2);letter-spacing:1px;text-transform:uppercase}
+.clock{font-family:monospace;font-size:16px;color:var(--gold);letter-spacing:2px;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--amb);box-shadow:0 0 6px var(--amb);animation:blink 1.4s infinite;flex-shrink:0}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-
-.nav{height:38px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0}
-.nav a{display:flex;align-items:center;gap:5px;padding:0 18px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);text-decoration:none;border-bottom:2px solid transparent;transition:all .15s}
-.nav a:hover{color:var(--txt)}
-.nav a.active{color:var(--gold);border-bottom-color:var(--gold)}
-.nav-div{width:1px;background:var(--border);margin:5px 0}
-.nav-badge{background:var(--red);color:#fff;border-radius:8px;padding:0 5px;font-size:8px;line-height:14px}
-.btn-reset{margin-left:auto;padding:4px 10px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt3);font-family:'Rajdhani',sans-serif;text-transform:uppercase;transition:all .15s}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,50,50,.8)}50%{box-shadow:0 0 0 12px rgba(255,50,50,0)}}
+.pulse-anim{animation:pulse 1.5s infinite}
+.nav{height:34px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 6px;gap:4px;flex-shrink:0}
+.nav-tab{padding:3px 12px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);border:none;background:transparent;cursor:pointer;border-radius:3px;transition:all .12s;border-bottom:2px solid transparent}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-tab:hover{color:var(--txt)}
+.nbadge{background:var(--red);color:#fff;border-radius:8px;padding:0 4px;font-size:7px;line-height:12px;margin-left:3px}
+.btn-reset{margin-left:auto;padding:3px 8px;font-size:8px;font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt3);text-transform:uppercase;border-radius:2px;transition:all .15s}
 .btn-reset:hover{border-color:var(--red);color:var(--red)}
-
-.layout{display:flex;height:calc(100vh - 88px)}
-#map{flex:1;z-index:1;background:#0a0c10}
+.layout{display:flex;height:calc(100vh - 80px)}
+#map{flex:1;z-index:1;background:#0a0c10;position:relative}
 #map.placing{cursor:crosshair!important}
-#map.placing *{cursor:crosshair!important}
-
-/* BANNER */
-#place-banner{
-  position:absolute;top:12px;left:50%;transform:translateX(-50%);
-  z-index:2000;display:none;pointer-events:all;
-  background:rgba(2,6,9,.97);border:1px solid var(--gold);border-radius:6px;
-  padding:10px 18px;text-align:center;min-width:340px;
-  box-shadow:0 0 40px rgba(255,184,0,.2);
-}
-#place-banner.show{display:block}
-.pb-title{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
-.pb-sub{font-size:11px;color:var(--txt2);margin-bottom:8px}
-.pb-btns{display:flex;gap:8px;justify-content:center}
-
-/* SIDEBAR */
-.sidebar{width:265px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-.sb-filters{padding:6px;display:flex;gap:4px;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
-.sf{flex:1;padding:4px;font-size:9px;font-weight:700;letter-spacing:1px;border-radius:3px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt2);font-family:'Rajdhani',sans-serif;text-transform:uppercase;transition:all .12s;text-align:center}
+#banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2000;display:none;background:rgba(2,6,9,.97);border:1px solid var(--gold);border-radius:5px;padding:8px 14px;text-align:center;min-width:300px;box-shadow:0 0 30px rgba(255,184,0,.15)}
+#banner.show{display:block}
+.bn-title{font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:3px;font-weight:700;text-transform:uppercase}
+.bn-sub{font-size:10px;color:var(--txt2);margin-bottom:6px}
+.bn-btns{display:flex;gap:6px;justify-content:center}
+.sidebar{width:250px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sb-filters{padding:5px;display:flex;gap:3px;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0}
+.sf{flex:1;padding:3px;font-size:8px;font-weight:700;letter-spacing:1px;border-radius:2px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt2);text-transform:uppercase;transition:all .12s;text-align:center}
 .sf.on{border-color:var(--gold);color:var(--gold);background:rgba(255,184,0,.07)}
-.sb-section{display:flex;flex-direction:column;border-bottom:1px solid var(--border)}
-.sb-section.grow{flex:1;overflow:hidden}
-.sb-hdr{padding:6px 11px;font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--txt3);background:var(--panel2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.sb-cnt{background:var(--border2);color:var(--txt2);border-radius:8px;padding:0 6px;font-size:8px}
+.sb-sec{display:flex;flex-direction:column;border-bottom:1px solid var(--border)}
+.sb-sec.grow{flex:1;overflow:hidden}
+.sb-hdr{padding:5px 10px;font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);background:var(--panel2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.sb-cnt{background:var(--border2);color:var(--txt2);border-radius:8px;padding:0 5px;font-size:7px}
 .sb-list{overflow-y:auto;flex:1}
-.sb-list::-webkit-scrollbar{width:3px}
+.sb-list::-webkit-scrollbar{width:2px}
 .sb-list::-webkit-scrollbar-thumb{background:var(--border2)}
-.sb-empty{padding:18px;text-align:center;color:var(--txt3);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;line-height:2}
-.sb-item{padding:7px 11px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .1s}
+.sb-empty{padding:14px;text-align:center;color:var(--txt3);font-size:8px;letter-spacing:1px;text-transform:uppercase;line-height:2}
+.sb-item{padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .1s}
 .sb-item:hover{background:var(--panel2)}
-.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sb-info{flex:1;min-width:0}
-.sb-name{font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sb-sub{font-size:9px;color:var(--txt2);margin-top:1px}
-.sb-tag{font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;white-space:nowrap;letter-spacing:.5px}
+.sb-name{font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-sub{font-size:8px;color:var(--txt2);margin-top:1px}
+.sb-tag{font-size:7px;font-weight:700;padding:2px 4px;border-radius:2px;white-space:nowrap;letter-spacing:.5px}
 .tag-dispo{background:rgba(0,212,160,.1);color:var(--amb);border:1px solid rgba(0,212,160,.2)}
 .tag-dep{background:rgba(255,64,64,.1);color:var(--fire);border:1px solid rgba(255,64,64,.2)}
 .tag-route{background:rgba(255,184,0,.1);color:var(--gold);border:1px solid rgba(255,184,0,.2);animation:blink .8s infinite}
-.sb-actions{padding:9px;flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
-
-/* BUTTONS */
-.btn{padding:7px 14px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;text-transform:uppercase;transition:all .15s}
+.sb-actions{padding:7px;flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.btn{padding:6px 12px;border-radius:3px;font-family:inherit;font-size:9px;font-weight:700;letter-spacing:1.5px;cursor:pointer;border:none;text-transform:uppercase;transition:all .15s}
 .btn-primary{background:var(--gold);color:#000}
 .btn-primary:hover{filter:brightness(1.15)}
 .btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--txt2)}
@@ -93,57 +77,45 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
 .btn-ok{background:transparent;border:1px solid var(--amb);color:var(--amb)}
 .btn-ok:hover{background:rgba(0,212,160,.1)}
 .btn-w{width:100%}
-.btn-sm{padding:4px 9px;font-size:9px}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(2,6,9,.92);z-index:3000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal-overlay.open{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border2);border-radius:7px;width:490px;max-height:85vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.95)}
-.modal::-webkit-scrollbar{width:3px}
-.modal::-webkit-scrollbar-thumb{background:var(--border2)}
-.mh{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel2);position:sticky;top:0;z-index:2}
-.mh-title{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:#fff}
-.mh-close{background:none;border:none;color:var(--txt2);font-size:16px;cursor:pointer;padding:2px 5px;border-radius:3px;transition:all .12s}
-.mh-close:hover{color:#fff;background:rgba(255,255,255,.08)}
-.mb{padding:15px}
-.mf{padding:10px 15px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--panel2)}
-.fg{margin-bottom:11px}
-.fl{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:4px;display:block}
-.fi,.fs,.ft{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:12px;outline:none;transition:border-color .12s}
+.btn-sm{padding:3px 8px;font-size:8px}
+.modal-ov{position:fixed;inset:0;background:rgba(2,6,9,.92);z-index:3000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-ov.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:6px;width:460px;max-height:85vh;overflow-y:auto}
+.mh{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel2);position:sticky;top:0;z-index:2}
+.mh-t{font-size:10px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:uppercase}
+.mh-x{background:none;border:none;color:var(--txt2);font-size:15px;cursor:pointer;padding:2px 5px;border-radius:2px}
+.mh-x:hover{color:#fff;background:rgba(255,255,255,.08)}
+.mb{padding:12px}
+.mf{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end;background:var(--panel2)}
+.fg{margin-bottom:10px}
+.fl{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:3px;display:block}
+.fi,.fs,.ft{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:6px 9px;color:var(--txt);font-family:inherit;font-size:11px;outline:none;transition:border-color .12s}
 .fi:focus,.fs:focus,.ft:focus{border-color:var(--gold)}
-.ft{resize:vertical;min-height:55px}
+.ft{resize:vertical;min-height:50px}
 .fs option{background:var(--panel2)}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.pos-badge{display:flex;align-items:center;gap:7px;padding:7px 10px;background:rgba(0,212,160,.05);border:1px solid rgba(0,212,160,.2);border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--amb)}
-.unit-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:3px}
-.ug-item{padding:6px 8px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:10px;transition:all .12s}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pos-b{display:flex;align-items:center;gap:6px;padding:6px 9px;background:rgba(0,212,160,.05);border:1px solid rgba(0,212,160,.2);border-radius:3px;font-family:monospace;font-size:9px;color:var(--amb)}
+.unit-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:3px}
+.ug-item{padding:5px 7px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:9px;transition:all .12s}
 .ug-item.sel{border-color:var(--gold);background:rgba(255,184,0,.06)}
-.uc{font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;letter-spacing:.5px;white-space:nowrap}
+.uc{font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px;letter-spacing:.5px;white-space:nowrap}
 .uc-p{background:rgba(59,158,255,.12);color:var(--police);border:1px solid rgba(59,158,255,.2)}
 .uc-f{background:rgba(255,64,64,.12);color:var(--fire);border:1px solid rgba(255,64,64,.2)}
 .uc-a{background:rgba(0,212,160,.12);color:var(--amb);border:1px solid rgba(0,212,160,.2)}
-
-/* NOTIFS */
-.notifs{position:fixed;top:96px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:5px;pointer-events:none}
-.notif{padding:9px 13px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px;min-width:230px;border-left:3px solid;animation:slideIn .2s ease;font-family:'Rajdhani',sans-serif;text-transform:uppercase}
+.notifs{position:fixed;top:90px;right:10px;z-index:9999;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.notif{padding:7px 11px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;min-width:210px;border-left:3px solid;animation:slideIn .2s ease;text-transform:uppercase}
 @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 .n-ok{background:rgba(0,212,160,.1);border-color:var(--amb);color:var(--amb)}
 .n-err{background:rgba(255,51,51,.1);border-color:var(--red);color:var(--red)}
 .n-info{background:rgba(59,158,255,.1);border-color:var(--police);color:var(--police)}
 .n-warn{background:rgba(255,184,0,.1);border-color:var(--gold);color:var(--gold)}
-
-/* Leaflet */
-.leaflet-popup-content-wrapper{background:rgba(6,16,26,.98)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--txt)!important;box-shadow:0 8px 28px rgba(0,0,0,.9)!important}
+.leaflet-popup-content-wrapper{background:rgba(6,16,26,.98)!important;border:1px solid var(--border2)!important;border-radius:4px!important;color:var(--txt)!important;box-shadow:0 8px 24px rgba(0,0,0,.9)!important}
 .leaflet-popup-tip{background:rgba(6,16,26,.98)!important}
-.leaflet-popup-content{margin:9px 13px!important;font-family:'Rajdhani',sans-serif!important}
+.leaflet-popup-content{margin:8px 12px!important;font-family:inherit!important}
 .leaflet-control-zoom a{background:var(--panel2)!important;color:var(--txt)!important;border-bottom:1px solid var(--border)!important}
 .leaflet-control-zoom a:hover{background:var(--panel)!important;color:#fff!important}
-.leaflet-control-attribution{background:rgba(2,6,9,.8)!important;color:var(--txt3)!important;font-size:8px!important}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,50,50,.8)}50%{box-shadow:0 0 0 14px rgba(255,50,50,0)}}
-.pulse-anim{animation:pulse 1.5s infinite}
-
-/* Popup buttons */
-.pp-btn{padding:3px 8px;font-size:9px;border-radius:3px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.5px;border:1px solid;transition:all .12s}
+.leaflet-control-attribution{background:rgba(2,6,9,.8)!important;color:var(--txt3)!important;font-size:7px!important}
+.pp-btn{padding:3px 7px;font-size:8px;border-radius:2px;cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.5px;border:1px solid;transition:all .12s}
 </style>
 </head>
 <body>
@@ -151,39 +123,36 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
 <div class="topbar">
   <div class="logo">LSPD</div>
   <div>
-    <div class="brand-main">DISPATCH CENTER</div>
+    <div class="brand">DISPATCH CENTER</div>
     <div class="brand-sub">LOS SANTOS · SAN ANDREAS</div>
   </div>
-  <div class="topbar-stats">
-    <div class="ts"><div class="ts-val" id="st-active" style="color:var(--red)">0</div><div class="ts-lbl">Incidents</div></div>
-    <div class="ts"><div class="ts-val" id="st-dispo" style="color:var(--amb)">0</div><div class="ts-lbl">Dispos</div></div>
-    <div class="ts"><div class="ts-val" id="st-route" style="color:var(--gold)">0</div><div class="ts-lbl">En route</div></div>
+  <div class="stats">
+    <div class="st"><div class="st-v" id="st-active" style="color:var(--red)">0</div><div class="st-l">Incidents</div></div>
+    <div class="st"><div class="st-v" id="st-dispo" style="color:var(--amb)">0</div><div class="st-l">Dispos</div></div>
+    <div class="st"><div class="st-v" id="st-route" style="color:var(--gold)">0</div><div class="st-l">En route</div></div>
   </div>
   <div class="clock" id="clock">00:00:00</div>
-  <div class="dot-live"></div>
+  <div class="dot"></div>
 </div>
 
 <div class="nav">
-  <a href="map.html" class="active">▦ CARTE</a>
-  <div class="nav-div"></div>
-  <a href="intervention.html">⚑ INTERVENTIONS <span class="nav-badge" id="nav-inc-badge">0</span></a>
-  <div class="nav-div"></div>
-  <a href="patrouille.html">⬡ PATROUILLES <span class="nav-badge" id="nav-pat-badge">0</span></a>
-  <button class="btn-reset" onclick="resetAll()">🗑 RÉINITIALISER</button>
+  <button class="nav-tab active">▦ CARTE</button>
+  <button class="nav-tab">⚑ INTERVENTIONS <span class="nbadge" id="nav-inc-badge">0</span></button>
+  <button class="nav-tab">⬡ PATROUILLES <span class="nbadge" id="nav-pat-badge">0</span></button>
+  <button class="btn-reset" onclick="resetAll()">RÉINIT</button>
 </div>
 
 <div class="layout">
   <div style="flex:1;position:relative">
     <div id="map"></div>
-    <div id="place-banner">
-      <div class="pb-title" id="pb-title">PLACEMENT</div>
-      <div class="pb-sub" id="pb-sub">Cliquez sur la carte</div>
-      <div class="pb-btns" id="pb-btns">
+    <div id="banner">
+      <div class="bn-title" id="bn-title">PLACEMENT</div>
+      <div class="bn-sub" id="bn-sub">Cliquez sur la carte</div>
+      <div class="bn-btns" id="bn-btns">
         <button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>
       </div>
     </div>
   </div>
-
   <div class="sidebar">
     <div class="sb-filters">
       <button class="sf on" onclick="setFilter('all',this)">TOUS</button>
@@ -191,13 +160,13 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
       <button class="sf" onclick="setFilter('fire',this)">FEU</button>
       <button class="sf" onclick="setFilter('ambulance',this)">MED</button>
     </div>
-    <div class="sb-section" style="max-height:200px">
+    <div class="sb-sec" style="max-height:190px">
       <div class="sb-hdr">⚑ INCIDENTS <span class="sb-cnt" id="cnt-inc">0</span></div>
       <div class="sb-list" id="list-inc"><div class="sb-empty">Aucun incident actif</div></div>
     </div>
-    <div class="sb-section grow">
+    <div class="sb-sec grow">
       <div class="sb-hdr">⬡ UNITÉS <span class="sb-cnt" id="cnt-units">0</span></div>
-      <div class="sb-list" id="list-units"><div class="sb-empty">Aucune unité — ajoutez-en ci-dessous</div></div>
+      <div class="sb-list" id="list-units"><div class="sb-empty">Aucune unité</div></div>
     </div>
     <div class="sb-actions">
       <button class="btn btn-primary btn-w" onclick="startNewIncident()">+ NOUVEL INCIDENT</button>
@@ -209,14 +178,11 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
 <div class="notifs" id="notifs"></div>
 
 <!-- MODAL INCIDENT -->
-<div class="modal-overlay" id="modal-inc">
+<div class="modal-ov" id="modal-inc">
   <div class="modal">
-    <div class="mh"><span class="mh-title" id="inc-modal-title">⚑ NOUVEL INCIDENT</span><button class="mh-close" onclick="closeIncModal()">✕</button></div>
+    <div class="mh"><span class="mh-t" id="inc-modal-title">NOUVEL INCIDENT</span><button class="mh-x" onclick="closeIncModal()">✕</button></div>
     <div class="mb">
-      <div class="fg">
-        <label class="fl">Position</label>
-        <div class="pos-badge">📍 <span id="inc-pos-display">—</span></div>
-      </div>
+      <div class="fg"><label class="fl">Position</label><div class="pos-b">📍 <span id="inc-pos-display">—</span></div></div>
       <div id="inc-form-fields">
         <div class="frow">
           <div class="fg"><label class="fl">Type</label>
@@ -237,11 +203,8 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
         </div>
         <div class="fg"><label class="fl">Description</label><textarea class="ft" id="f-desc" placeholder="Détails…"></textarea></div>
       </div>
-      <div class="fg">
-        <label class="fl">Patrouilles à dépêcher</label>
-        <div class="unit-grid" id="f-units">
-          <p style="color:var(--txt2);font-size:10px;padding:6px 0;grid-column:1/-1">Aucune patrouille disponible</p>
-        </div>
+      <div class="fg"><label class="fl">Patrouilles à dépêcher</label>
+        <div class="unit-grid" id="f-units"><p style="color:var(--txt2);font-size:9px;padding:5px 0;grid-column:1/-1">Aucune patrouille disponible</p></div>
       </div>
     </div>
     <div class="mf">
@@ -252,14 +215,11 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
 </div>
 
 <!-- MODAL PATROUILLE -->
-<div class="modal-overlay" id="modal-unit">
+<div class="modal-ov" id="modal-unit">
   <div class="modal">
-    <div class="mh"><span class="mh-title">+ NOUVELLE PATROUILLE</span><button class="mh-close" onclick="closeModal('modal-unit')">✕</button></div>
+    <div class="mh"><span class="mh-t">NOUVELLE PATROUILLE</span><button class="mh-x" onclick="closeModal('modal-unit')">✕</button></div>
     <div class="mb">
-      <div class="fg">
-        <label class="fl">Position sur la carte</label>
-        <div class="pos-badge">📍 <span id="unit-pos-display">—</span></div>
-      </div>
+      <div class="fg"><label class="fl">Position</label><div class="pos-b">📍 <span id="unit-pos-display">—</span></div></div>
       <div class="frow">
         <div class="fg"><label class="fl">Indicatif</label><input class="fi" id="u-id" placeholder="Ex: LSPD-01"/></div>
         <div class="fg"><label class="fl">Type</label>
@@ -280,149 +240,152 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
 </div>
 
 <script>
-// ════════════════════════════════
-//  STORAGE
-// ════════════════════════════════
+// ── STORAGE (localStorage avec préfixe) ──
 const S={
-  get:k=>{try{return JSON.parse(localStorage.getItem('gta2_'+k))}catch{return null}},
-  set:(k,v)=>{localStorage.setItem('gta2_'+k,JSON.stringify(v));localStorage.setItem('gta2_ts',Date.now())}
+  get:k=>{try{return JSON.parse(localStorage.getItem('gtav_'+k))}catch{return null}},
+  set:(k,v)=>{localStorage.setItem('gtav_'+k,JSON.stringify(v));localStorage.setItem('gtav_ts',Date.now())}
 };
-
-// Efface toutes les anciennes données (toutes les clés gta_, c112_, etc.)
-function cleanOldData(){
-  const keys=Object.keys(localStorage);
-  keys.forEach(k=>{
-    if(k.startsWith('gta_')||k.startsWith('c112_')) localStorage.removeItem(k);
-  });
-}
-
 function initData(){
-  cleanOldData(); // Supprime les anciennes données
   if(!S.get('units'))     S.set('units',[]);
   if(!S.get('incidents')) S.set('incidents',[]);
 }
-
 function resetAll(){
   if(!confirm('Supprimer toutes les données ?')) return;
-  Object.keys(localStorage).filter(k=>k.startsWith('gta2_')).forEach(k=>localStorage.removeItem(k));
-  Object.values(animations).forEach((_,uid)=>{if(routeLines[uid]){map.removeLayer(routeLines[uid]);}});
+  Object.keys(localStorage).filter(k=>k.startsWith('gtav_')).forEach(k=>localStorage.removeItem(k));
+  Object.values(routeLines).forEach(l=>{try{map.removeLayer(l)}catch{}});
   animations={};routeLines={};
   initData();renderMap();notify('Données réinitialisées','ok');
 }
 
-// ════════════════════════════════
-//  CLOCK
-// ════════════════════════════════
+// ── CLOCK ──
 setInterval(()=>{
   const n=new Date();
   document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
 },1000);
 
-// ════════════════════════════════
-//  MAP — CARTE GTA 5
-// ════════════════════════════════
+// ── MAP ──
+// La carte GTA V satellite fait 2048x2048 px.
+// On utilise CRS.Simple. On mappe l'image entière sur les bounds [0,0] → [2048,2048].
+// Leaflet CRS.Simple : y croît vers le haut, mais les images PNG ont y vers le bas.
+// On utilise donc bounds = [[2048,0],[0,2048]] (coin haut-gauche = [2048,0], bas-droit = [0,2048])
+// pour que l'image s'affiche dans le bon sens.
+
 let map,uMarkers={},iMarkers={},routeLines={},animations={};
 let filterType='all',lastTs=0;
 
+const IMG_URL='https://www.bragitoff.com/wp-content/uploads/2015/11/GTAV_SATELLITE_2048x2048.png';
+const IMG_SIZE=2048;
+
+// Bounds : [SW, NE] en CRS.Simple = [[row_min, col_min],[row_max, col_max]]
+// On veut que l'image remplisse [0,0] à [2048,2048] dans l'espace de la carte.
+// SW = [0,0], NE = [2048, 2048]
+// Leaflet ImageOverlay : bounds = [[lat_min,lng_min],[lat_max,lng_max]]
+// Avec CRS.Simple : lat = y (vertical), lng = x (horizontal)
+// Image PNG : origine en haut-gauche. On veut origine (0,0) = coin haut-gauche de la carte GTA.
+// → lat_max = 2048 (haut), lat_min = 0 (bas), lng_min = 0 (gauche), lng_max = 2048 (droite)
+const BOUNDS = [[0,0],[IMG_SIZE,IMG_SIZE]];
+
+// Centre du jeu (Los Santos downtown ≈ centre de la carte)
+// D'après la carte satellite GTA V 2048x2048 :
+// Los Santos Downtown ≈ pixel (1200, 1700) depuis le coin haut-gauche
+// En CRS.Simple (y inversé) : lat = 2048 - 1700 = 348, lng = 1200
+const CENTER = [400, 1200];
+
 function initMap(){
-  map=L.map('map',{
-    crs:L.CRS.Simple,
-    minZoom:3,maxZoom:7,
-    zoomControl:true,
-    attributionControl:true
+  map = L.map('map',{
+    crs: L.CRS.Simple,
+    minZoom: -2,
+    maxZoom: 3,
+    zoomControl: true,
+    attributionControl: true
   });
 
-  // Tuiles GTA V — GitHub Pages (communauté)
-  // Format spécial : {z}-{x}_{y}.png (pas de slash entre x et y)
-  L.tileLayer('https://gta5-map.github.io/tiles/road/{z}-{x}_{y}.png',{
-    attribution:'© Rockstar Games — GTA V',
-    tileSize:256,
-    minZoom:3,maxZoom:7,
-    noWrap:true,
-    // Tuile transparente en cas d'erreur (pas de carré rouge)
-    errorTileUrl:'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+  L.imageOverlay(IMG_URL, BOUNDS, {
+    attribution: '© Rockstar Games — GTA V',
+    opacity: 1,
+    zIndex: 1
   }).addTo(map);
 
-  // Vue initiale — Los Santos (Downtown)
-  map.setView([-70,118],3);
-  map.on('click',onMapClick);
+  // Contraindre la vue aux bounds de la carte
+  map.setMaxBounds([[BOUNDS[0][0]-50, BOUNDS[0][1]-50],[BOUNDS[1][0]+50, BOUNDS[1][1]+50]]);
+  map.fitBounds(BOUNDS);
+
+  map.on('click', onMapClick);
 }
 
-// ════════════════════════════════
-//  PLACEMENT MODE
-// ════════════════════════════════
+// Coordonnées utiles (y inversé : lat = 2048 - pixel_y, lng = pixel_x)
+// Pour mémoire : Los Santos Downtown ≈ lat=400, lng=1200
+
+// ── PLACEMENT ──
 let placingMode=null,placingMarker=null,pendingPos=null;
 
 function onMapClick(e){
   if(!placingMode) return;
   if(placingMarker) map.removeLayer(placingMarker);
-  placingMarker=L.marker([e.latlng.lat,e.latlng.lng],{
+  placingMarker = L.marker([e.latlng.lat, e.latlng.lng],{
     draggable:true,
-    icon:placingMode==='incident'?makeIncPlacingIcon():makeUnitPlacingIcon()
+    icon: placingMode==='incident' ? makeIncPlacingIcon() : makeUnitPlacingIcon()
   }).addTo(map);
-  pendingPos=[e.latlng.lat,e.latlng.lng];
+  pendingPos = [e.latlng.lat, e.latlng.lng];
   placingMarker.on('dragend',()=>{
-    const p=placingMarker.getLatLng();pendingPos=[p.lat,p.lng];updateBannerConfirm();
+    const p=placingMarker.getLatLng(); pendingPos=[p.lat,p.lng]; updateBannerConfirm();
   });
   updateBannerConfirm();
 }
 
 function makeIncPlacingIcon(){
-  return L.divIcon({className:'',iconSize:[40,52],iconAnchor:[20,52],
-    html:`<div style="position:relative;width:40px">
-      <div class="pulse-anim" style="width:40px;height:40px;background:#ff2020;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 22px rgba(255,30,30,.9);font-family:'Orbitron',sans-serif">!</div>
-      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #ff2020"></div>
-    </div>`
-  });
+  return L.divIcon({className:'',iconSize:[36,48],iconAnchor:[18,48],
+    html:`<div style="position:relative;width:36px">
+      <div class="pulse-anim" style="width:36px;height:36px;background:#ff2020;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;border:2px solid rgba(255,255,255,.9)">!</div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:11px solid #ff2020"></div>
+    </div>`});
 }
 function makeUnitPlacingIcon(){
-  return L.divIcon({className:'',iconSize:[38,50],iconAnchor:[19,50],
-    html:`<div style="position:relative;width:38px">
-      <div style="width:38px;height:38px;background:rgba(2,6,9,.97);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid #ffb800;box-shadow:0 0 18px rgba(255,184,0,.7)">📌</div>
-      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:14px solid #ffb800"></div>
-    </div>`
-  });
+  return L.divIcon({className:'',iconSize:[34,46],iconAnchor:[17,46],
+    html:`<div style="position:relative;width:34px">
+      <div style="width:34px;height:34px;background:rgba(2,6,9,.97);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #ffb800">📌</div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:12px solid #ffb800"></div>
+    </div>`});
 }
 
 function updateBannerConfirm(){
-  document.getElementById('pb-sub').textContent=`${pendingPos[0].toFixed(2)}, ${pendingPos[1].toFixed(2)} — Glissez pour ajuster`;
-  document.getElementById('pb-btns').innerHTML=`
+  document.getElementById('bn-sub').textContent=`(${pendingPos[0].toFixed(0)}, ${pendingPos[1].toFixed(0)}) — Glissez pour ajuster`;
+  document.getElementById('bn-btns').innerHTML=`
     <button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>
     <button class="btn btn-ok btn-sm" onclick="confirmPlacing()">✓ CONFIRMER</button>`;
 }
 
 function startNewIncident(){
-  cancelPlacing();placingMode='incident';
+  cancelPlacing(); placingMode='incident';
   map.getContainer().classList.add('placing');
-  document.getElementById('place-banner').classList.add('show');
-  document.getElementById('pb-title').textContent='📍 PLACEMENT INCIDENT';
-  document.getElementById('pb-sub').textContent='Cliquez sur la carte GTA pour placer l\'incident';
-  document.getElementById('pb-btns').innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
+  document.getElementById('banner').classList.add('show');
+  document.getElementById('bn-title').textContent='PLACEMENT INCIDENT';
+  document.getElementById('bn-sub').textContent='Cliquez sur la carte GTA V';
+  document.getElementById('bn-btns').innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
 }
 function startNewUnit(){
-  cancelPlacing();placingMode='unit';
+  cancelPlacing(); placingMode='unit';
   map.getContainer().classList.add('placing');
-  document.getElementById('place-banner').classList.add('show');
-  document.getElementById('pb-title').textContent='📍 PLACEMENT PATROUILLE';
-  document.getElementById('pb-sub').textContent='Cliquez sur la carte GTA pour placer la patrouille';
-  document.getElementById('pb-btns').innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
+  document.getElementById('banner').classList.add('show');
+  document.getElementById('bn-title').textContent='PLACEMENT PATROUILLE';
+  document.getElementById('bn-sub').textContent='Cliquez sur la carte GTA V';
+  document.getElementById('bn-btns').innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
 }
 function cancelPlacing(){
-  placingMode=null;pendingPos=null;
+  placingMode=null; pendingPos=null;
   if(placingMarker){map.removeLayer(placingMarker);placingMarker=null;}
   map.getContainer().classList.remove('placing');
-  document.getElementById('place-banner').classList.remove('show');
+  document.getElementById('banner').classList.remove('show');
 }
 function confirmPlacing(){
   if(!pendingPos) return;
-  const mode=placingMode,pos=[...pendingPos];
+  const mode=placingMode, pos=[...pendingPos];
   placingMode=null;
   map.getContainer().classList.remove('placing');
-  document.getElementById('place-banner').classList.remove('show');
-
+  document.getElementById('banner').classList.remove('show');
   if(mode==='incident'){
-    document.getElementById('inc-modal-title').textContent='⚑ NOUVEL INCIDENT';
-    document.getElementById('inc-pos-display').textContent=`${pos[0].toFixed(2)}, ${pos[1].toFixed(2)}`;
+    document.getElementById('inc-modal-title').textContent='NOUVEL INCIDENT';
+    document.getElementById('inc-pos-display').textContent=`${pos[0].toFixed(0)}, ${pos[1].toFixed(0)}`;
     document.getElementById('inc-form-fields').style.display='';
     document.getElementById('btn-create-inc').textContent='CRÉER + DISPATCHER';
     document.getElementById('f-desc').value='';
@@ -431,38 +394,33 @@ function confirmPlacing(){
     window._renforcerInc=null;
     const avail=(S.get('units')||[]).filter(u=>u.status==='available');
     document.getElementById('f-units').innerHTML=avail.length
-      ?avail.map(u=>{
-        const cc=u.type==='police'?'uc-p':u.type==='fire'?'uc-f':'uc-a';
-        return `<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
-          <span class="uc ${cc}">${u.id}</span><span>${u.name.substring(0,16)}</span>
-        </div>`;
-      }).join('')
-      :'<p style="color:var(--txt2);font-size:10px;padding:6px 0;grid-column:1/-1">Aucune patrouille disponible</p>';
+      ?avail.map(u=>`<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
+          <span class="uc ${u.type==='police'?'uc-p':u.type==='fire'?'uc-f':'uc-a'}">${u.id}</span><span>${u.name.substring(0,14)}</span>
+        </div>`).join('')
+      :'<p style="color:var(--txt2);font-size:9px;padding:5px 0;grid-column:1/-1">Aucune patrouille disponible</p>';
     window._pendingIncPos=pos;
     openModal('modal-inc');
   } else {
-    document.getElementById('unit-pos-display').textContent=`${pos[0].toFixed(2)}, ${pos[1].toFixed(2)}`;
-    document.getElementById('u-id').value='';document.getElementById('u-name').value='';
+    document.getElementById('unit-pos-display').textContent=`${pos[0].toFixed(0)}, ${pos[1].toFixed(0)}`;
+    document.getElementById('u-id').value=''; document.getElementById('u-name').value='';
     window._pendingUnitPos=pos;
     openModal('modal-unit');
   }
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')cancelPlacing();});
 
-// ════════════════════════════════
-//  CRÉER INCIDENT
-// ════════════════════════════════
+// ── INCIDENT ──
 async function createIncident(){
   if(window._renforcerInc){
-    const incId=window._renforcerInc;window._renforcerInc=null;
+    const incId=window._renforcerInc; window._renforcerInc=null;
     const sel=[...document.querySelectorAll('#f-units .ug-item.sel')].map(el=>el.dataset.uid);
     if(!sel.length){notify('Sélectionnez une patrouille','err');return;}
     const units=S.get('units')||[],incidents=S.get('incidents')||[];
     sel.forEach(uid=>{const u=units.find(x=>x.id===uid);if(u){u.status='dispatched';u.incident=incId;}});
     const inc=incidents.find(i=>i.id===incId);
     if(inc) inc.units=[...new Set([...inc.units,...sel])];
-    S.set('units',units);S.set('incidents',incidents);
-    closeIncModal();renderMap();
+    S.set('units',units); S.set('incidents',incidents);
+    closeIncModal(); renderMap();
     notify(`Renfort → ${incId}`,'warn');
     for(const uid of sel) await startDispatch(uid,incId);
     return;
@@ -481,22 +439,19 @@ async function createIncident(){
   sel.forEach(uid=>{const u=units.find(x=>x.id===uid);if(u){u.status='dispatched';u.incident=id;}});
   S.set('units',units);
   if(placingMarker){map.removeLayer(placingMarker);placingMarker=null;}
-  closeIncModal();renderMap();
-  map.flyTo(pos,5,{animate:true,duration:0.8});
+  closeIncModal(); renderMap();
+  map.flyTo(pos,1,{animate:true,duration:0.8});
   notify(`${id} — ${type}`,prio===1?'err':prio===2?'warn':'info');
   for(const uid of sel) await startDispatch(uid,id);
 }
-
 function closeIncModal(){
-  window._renforcerInc=null;window._pendingIncPos=null;
+  window._renforcerInc=null; window._pendingIncPos=null;
   document.getElementById('inc-form-fields').style.display='';
   document.getElementById('btn-create-inc').textContent='CRÉER + DISPATCHER';
   closeModal('modal-inc');
 }
 
-// ════════════════════════════════
-//  CRÉER PATROUILLE
-// ════════════════════════════════
+// ── PATROUILLE ──
 function createUnit(){
   const pos=window._pendingUnitPos;
   if(!pos){notify('Position manquante','err');return;}
@@ -509,106 +464,80 @@ function createUnit(){
   units.push({id,name,type,status:'available',pos:[...pos],basePos:[...pos],incident:null});
   S.set('units',units);
   if(placingMarker){map.removeLayer(placingMarker);placingMarker=null;}
-  closeModal('modal-unit');renderMap();
-  notify(`✅ ${id} — Patrouille ajoutée`,'ok');
+  closeModal('modal-unit'); renderMap();
+  notify(`${id} ajouté`,'ok');
 }
 
-// ════════════════════════════════
-//  ICÔNES
-// ════════════════════════════════
+// ── ICÔNES ──
 function uColor(u){return{police:'#3b9eff',fire:'#ff4040',ambulance:'#00d4a0'}[u.type]||'#fff';}
-
 function makeUIcon(u,moving=false){
   const c=uColor(u);
-  const glow=moving?`0 0 18px ${c},0 0 35px ${c}55`:u.status==='dispatched'?`0 0 10px ${c}88`:`0 0 4px ${c}44`;
-  const bdr=u.status==='dispatched'?`2px solid ${c}`:`1px solid ${c}66`;
   const lbl=u.id.length>7?u.id.slice(0,7):u.id;
   const dot=moving?`<div style="position:absolute;bottom:-2px;right:-2px;width:5px;height:5px;background:${c};border-radius:50%;animation:blink .5s infinite"></div>`:'';
-  return L.divIcon({className:'',iconSize:[36,36],iconAnchor:[18,18],
-    html:`<div style="position:relative;width:36px;height:36px;border-radius:5px;background:rgba(2,6,9,.97);border:${bdr};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:7px;color:${c};font-family:'Share Tech Mono',monospace;box-shadow:${glow};letter-spacing:.3px">${lbl}${dot}</div>`
-  });
+  return L.divIcon({className:'',iconSize:[34,34],iconAnchor:[17,17],
+    html:`<div style="position:relative;width:34px;height:34px;border-radius:4px;background:rgba(2,6,9,.95);border:${moving?'2px':'1px'} solid ${c};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:7px;color:${c};font-family:monospace;letter-spacing:.3px">${lbl}${dot}</div>`});
 }
 function makeIIcon(inc){
   const c={1:'#ff2020',2:'#ffb800',3:'#3b9eff'}[inc.priority];
-  const tc=inc.priority===2?'#000':'#fff';
-  const sz=inc.priority===1?40:34;
-  const pulse=inc.priority===1?'class="pulse-anim"':'';
+  const sz=inc.priority===1?38:32;
   return L.divIcon({className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],
-    html:`<div ${pulse} style="width:${sz}px;height:${sz}px;border-radius:5px;background:${c};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:9px;color:${tc};font-family:'Orbitron',sans-serif;border:2px solid rgba(255,255,255,.85)">P${inc.priority}</div>`
-  });
+    html:`<div ${inc.priority===1?'class="pulse-anim"':''} style="width:${sz}px;height:${sz}px;border-radius:4px;background:${c};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px;color:${inc.priority===2?'#000':'#fff'};border:2px solid rgba(255,255,255,.85)">P${inc.priority}</div>`});
 }
 
-// ════════════════════════════════
-//  RENDER MAP
-// ════════════════════════════════
+// ── RENDER ──
 function renderMap(){
-  const units=S.get('units')||[],incidents=S.get('incidents')||[];
-  Object.values(uMarkers).forEach(m=>map.removeLayer(m));
-  Object.values(iMarkers).forEach(m=>map.removeLayer(m));
-  uMarkers={};iMarkers={};
+  const units=S.get('units')||[], incidents=S.get('incidents')||[];
+  Object.values(uMarkers).forEach(m=>{try{map.removeLayer(m)}catch{}});
+  Object.values(iMarkers).forEach(m=>{try{map.removeLayer(m)}catch{}});
+  uMarkers={}; iMarkers={};
 
-  // Patrouilles
   units.forEach(u=>{
     if(filterType!=='all'&&u.type!==filterType) return;
     const moving=!!animations[u.id];
     const m=L.marker(u.pos,{icon:makeUIcon(u,moving),zIndexOffset:moving?200:0}).addTo(map);
-    const sl={available:'🟢 Disponible',dispatched:'🔴 En intervention'}[u.status]||u.status;
-    m.bindPopup(`<div style="min-width:160px">
-      <b style="font-size:13px;color:#fff">${u.id}</b><br>
-      <span style="color:#7a9ab0;font-size:10px">${u.name}</span>
-      <hr style="border-color:#1c3048;margin:5px 0">
-      <div style="font-size:11px;margin-bottom:4px">${sl}</div>
-      ${u.incident?`<div style="font-size:10px;color:#ffb800">→ ${u.incident}</div>`:''}
-      ${moving?`<div style="font-size:10px;color:#ffb800;margin-top:2px">🚨 En route…</div>`:''}
-      <div style="margin-top:8px">
-        <button class="pp-btn" onclick="deleteUnit('${u.id}')" style="color:var(--red);border-color:var(--red)">🗑 Supprimer</button>
+    const sl={available:'Disponible',dispatched:'En intervention'}[u.status]||u.status;
+    m.bindPopup(`<div style="min-width:150px">
+      <b style="font-size:12px;color:#fff">${u.id}</b><br>
+      <span style="color:#7a9ab0;font-size:9px">${u.name}</span>
+      <hr style="border-color:#1c3048;margin:4px 0">
+      <div style="font-size:10px;margin-bottom:3px">${sl}</div>
+      ${u.incident?`<div style="font-size:9px;color:#ffb800">→ ${u.incident}</div>`:''}
+      <div style="margin-top:7px">
+        <button class="pp-btn" onclick="deleteUnit('${u.id}')" style="color:var(--red);border-color:var(--red)">Supprimer</button>
       </div>
     </div>`);
     uMarkers[u.id]=m;
   });
 
-  // Incidents
   incidents.forEach(inc=>{
     const closed=inc.status==='closed';
     const m=L.marker(inc.pos,{icon:makeIIcon(inc),zIndexOffset:closed?0:500,opacity:closed?0.4:1}).addTo(map);
     const elapsed=Math.floor((Date.now()-inc.time)/60000);
-
-    let actionBtns='';
-    if(closed){
-      // INCIDENT CLÔTURÉ — bouton supprimer
-      actionBtns=`<div style="margin-top:8px">
-        <button class="pp-btn" onclick="deleteIncident('${inc.id}')" style="color:var(--red);border-color:var(--red);width:100%">🗑 SUPPRIMER DÉFINITIVEMENT</button>
-      </div>`;
-    } else {
-      // INCIDENT ACTIF — renfort + clôturer
-      actionBtns=`<div style="margin-top:8px;display:flex;gap:5px">
-        <button class="pp-btn" onclick="openRenfort('${inc.id}')" style="color:#ffb800;border-color:#ffb800;flex:1">+ RENFORT</button>
-        <button class="pp-btn" onclick="closeIncident('${inc.id}')" style="color:var(--amb);border-color:var(--amb);flex:1">✓ CLÔTURER</button>
-      </div>`;
-    }
-
-    m.bindPopup(`<div style="min-width:175px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <b style="font-size:12px;color:#fff">${inc.id}</b>
-        ${closed?`<span style="font-size:8px;color:var(--amb);border:1px solid var(--amb);border-radius:2px;padding:1px 5px;letter-spacing:1px">CLÔTURÉ</span>`:''}
+    const actionBtns=closed
+      ?`<div style="margin-top:7px"><button class="pp-btn" onclick="deleteIncident('${inc.id}')" style="color:var(--red);border-color:var(--red);width:100%">Supprimer</button></div>`
+      :`<div style="margin-top:7px;display:flex;gap:4px">
+          <button class="pp-btn" onclick="openRenfort('${inc.id}')" style="color:#ffb800;border-color:#ffb800;flex:1">+ Renfort</button>
+          <button class="pp-btn" onclick="closeIncident('${inc.id}')" style="color:var(--amb);border-color:var(--amb);flex:1">✓ Clôturer</button>
+        </div>`;
+    m.bindPopup(`<div style="min-width:165px">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+        <b style="font-size:11px;color:#fff">${inc.id}</b>
+        ${closed?`<span style="font-size:7px;color:var(--amb);border:1px solid var(--amb);border-radius:2px;padding:1px 4px">CLÔTURÉ</span>`:''}
       </div>
-      <span style="color:#ffb800;font-size:11px">${inc.type}</span>
-      <hr style="border-color:#1c3048;margin:5px 0">
-      <span style="font-size:10px;color:#7a9ab0">⏱ ${elapsed}min · Patrouilles: <b>${inc.units.join(', ')||'Aucune'}</b></span>
-      ${inc.desc!=='—'?`<div style="font-size:9px;color:#7a9ab0;margin-top:3px">${inc.desc}</div>`:''}
+      <span style="color:#ffb800;font-size:10px">${inc.type}</span>
+      <hr style="border-color:#1c3048;margin:4px 0">
+      <span style="font-size:9px;color:#7a9ab0">⏱ ${elapsed}min · ${inc.units.join(', ')||'Aucune'}</span>
+      ${inc.desc!=='—'?`<div style="font-size:8px;color:#7a9ab0;margin-top:2px">${inc.desc}</div>`:''}
       ${actionBtns}
     </div>`);
     iMarkers[inc.id]=m;
   });
 
-  renderSidebar();updateStats();
+  renderSidebar(); updateStats();
 }
 
-// ════════════════════════════════
-//  SIDEBAR
-// ════════════════════════════════
 function renderSidebar(){
-  const units=S.get('units')||[],incidents=S.get('incidents')||[];
+  const units=S.get('units')||[], incidents=S.get('incidents')||[];
   const active=incidents.filter(i=>i.status!=='closed');
   document.getElementById('cnt-inc').textContent=active.length;
   document.getElementById('list-inc').innerHTML=active.length
@@ -616,9 +545,9 @@ function renderSidebar(){
       const c={1:'var(--red)',2:'var(--gold)',3:'var(--police)'}[inc.priority];
       const elapsed=Math.floor((Date.now()-inc.time)/60000);
       return `<div class="sb-item" onclick="flyToInc('${inc.id}')">
-        <div class="sb-dot" style="background:${c};box-shadow:0 0 5px ${c}"></div>
+        <div class="sb-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div>
         <div class="sb-info"><div class="sb-name">${inc.type}</div><div class="sb-sub">${inc.id} · ${elapsed}min</div></div>
-        <span class="sb-tag ${inc.status==='active'?'tag-dep':'tag-dispo'}">${inc.status==='active'?'ACTIF':'ATTENTE'}</span>
+        <span class="sb-tag ${inc.status==='active'?'tag-dep':'tag-dispo'}">${inc.status==='active'?'ACTIF':'ATT.'}</span>
       </div>`;
     }).join('')
     :'<div class="sb-empty">Aucun incident actif</div>';
@@ -627,19 +556,19 @@ function renderSidebar(){
   document.getElementById('cnt-units').textContent=filt.length;
   document.getElementById('list-units').innerHTML=filt.length
     ?filt.map(u=>{
-      const c=uColor(u);const moving=!!animations[u.id];
+      const c=uColor(u); const moving=!!animations[u.id];
       const tag=moving?'tag-route':u.status==='available'?'tag-dispo':'tag-dep';
       return `<div class="sb-item" onclick="flyToUnit('${u.id}')">
-        <div class="sb-dot" style="background:${c};box-shadow:0 0 5px ${c}"></div>
-        <div class="sb-info"><div class="sb-name">${u.id} — ${u.name.substring(0,15)}</div><div class="sb-sub">${u.incident?'→ '+u.incident:'Disponible'}</div></div>
-        <span class="sb-tag ${tag}">${moving?'EN ROUTE':u.status==='available'?'DISPO':'DÉPÊCHÉ'}</span>
+        <div class="sb-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div>
+        <div class="sb-info"><div class="sb-name">${u.id} — ${u.name.substring(0,13)}</div><div class="sb-sub">${u.incident?'→ '+u.incident:'Disponible'}</div></div>
+        <span class="sb-tag ${tag}">${moving?'ROUTE':u.status==='available'?'DISPO':'DEP.'}</span>
       </div>`;
     }).join('')
-    :'<div class="sb-empty">Aucune patrouille<br>Utilisez le bouton ci-dessous</div>';
+    :'<div class="sb-empty">Aucune patrouille</div>';
 }
 
 function updateStats(){
-  const units=S.get('units')||[],incidents=S.get('incidents')||[];
+  const units=S.get('units')||[], incidents=S.get('incidents')||[];
   document.getElementById('st-active').textContent=incidents.filter(i=>i.status==='active').length;
   document.getElementById('st-dispo').textContent=units.filter(u=>u.status==='available').length;
   document.getElementById('st-route').textContent=Object.keys(animations).length;
@@ -650,96 +579,74 @@ function updateStats(){
 function flyToInc(id){
   const inc=(S.get('incidents')||[]).find(i=>i.id===id);
   if(!inc) return;
-  map.flyTo(inc.pos,5,{animate:true,duration:0.9});
+  map.flyTo(inc.pos,1,{animate:true,duration:0.9});
   setTimeout(()=>{if(iMarkers[id])iMarkers[id].openPopup();},1000);
 }
 function flyToUnit(id){
   const u=(S.get('units')||[]).find(u=>u.id===id);
   if(!u) return;
-  map.flyTo(u.pos,5,{animate:true,duration:0.9});
+  map.flyTo(u.pos,1,{animate:true,duration:0.9});
   setTimeout(()=>{if(uMarkers[id])uMarkers[id].openPopup();},1000);
 }
 function setFilter(type,btn){
   filterType=type;
   document.querySelectorAll('.sf').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');renderMap();
+  btn.classList.add('on'); renderMap();
 }
 
-// ════════════════════════════════
-//  ACTIONS INCIDENTS
-// ════════════════════════════════
+// ── ACTIONS ──
 function closeIncident(incId){
   const incidents=S.get('incidents')||[];
-  const inc=incidents.find(i=>i.id===incId);
-  if(!inc) return;
-  inc.status='closed';S.set('incidents',incidents);
-  // Libérer les patrouilles
+  const inc=incidents.find(i=>i.id===incId); if(!inc) return;
+  inc.status='closed'; S.set('incidents',incidents);
   const units=S.get('units')||[];
   units.forEach(u=>{
     if(u.incident===incId){
-      u.status='available';u.incident=null;
+      u.status='available'; u.incident=null;
       if(u.basePos) u.pos=[...u.basePos];
-      if(animations[u.id]){
-        delete animations[u.id];
-        if(routeLines[u.id]){map.removeLayer(routeLines[u.id]);delete routeLines[u.id];}
-      }
+      if(animations[u.id]){delete animations[u.id];if(routeLines[u.id]){map.removeLayer(routeLines[u.id]);delete routeLines[u.id];}}
     }
   });
-  S.set('units',units);
-  map.closePopup();renderMap();
-  notify(`${incId} — Clôturé · Cliquez sur le marqueur pour supprimer`,'ok');
+  S.set('units',units); map.closePopup(); renderMap();
+  notify(`${incId} — Clôturé`,'ok');
 }
-
 function deleteIncident(incId){
   const incidents=S.get('incidents')||[];
-  const idx=incidents.findIndex(i=>i.id===incId);
-  if(idx===-1) return;
-  incidents.splice(idx,1);
-  S.set('incidents',incidents);
+  const idx=incidents.findIndex(i=>i.id===incId); if(idx===-1) return;
+  incidents.splice(idx,1); S.set('incidents',incidents);
   if(iMarkers[incId]){map.removeLayer(iMarkers[incId]);delete iMarkers[incId];}
-  map.closePopup();renderMap();
-  notify(`${incId} — Supprimé`,'ok');
+  map.closePopup(); renderMap(); notify(`${incId} — Supprimé`,'ok');
 }
-
 function deleteUnit(uid){
-  if(!confirm(`Supprimer la patrouille ${uid} ?`)) return;
+  if(!confirm(`Supprimer ${uid} ?`)) return;
   const units=S.get('units')||[];
-  const idx=units.findIndex(u=>u.id===uid);
-  if(idx===-1) return;
-  units.splice(idx,1);S.set('units',units);
-  if(animations[uid]){delete animations[uid];}
+  const idx=units.findIndex(u=>u.id===uid); if(idx===-1) return;
+  units.splice(idx,1); S.set('units',units);
+  if(animations[uid]) delete animations[uid];
   if(routeLines[uid]){map.removeLayer(routeLines[uid]);delete routeLines[uid];}
   if(uMarkers[uid]){map.removeLayer(uMarkers[uid]);delete uMarkers[uid];}
-  map.closePopup();renderMap();
-  notify(`${uid} — Patrouille supprimée`,'ok');
+  map.closePopup(); renderMap(); notify(`${uid} — Supprimé`,'ok');
 }
-
 function openRenfort(incId){
   map.closePopup();
   const avail=(S.get('units')||[]).filter(u=>u.status==='available');
   if(!avail.length){notify('Aucune patrouille disponible','err');return;}
-  document.getElementById('inc-modal-title').textContent='🚨 ENVOYER RENFORT';
+  document.getElementById('inc-modal-title').textContent='ENVOYER RENFORT';
   document.getElementById('inc-pos-display').textContent=`Renfort → ${incId}`;
   document.getElementById('inc-form-fields').style.display='none';
   document.getElementById('btn-create-inc').textContent='ENVOYER RENFORT';
-  document.getElementById('f-units').innerHTML=avail.map(u=>{
-    const cc=u.type==='police'?'uc-p':u.type==='fire'?'uc-f':'uc-a';
-    return `<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
-      <span class="uc ${cc}">${u.id}</span><span>${u.name.substring(0,16)}</span>
-    </div>`;
-  }).join('');
-  window._pendingIncPos=null;window._renforcerInc=incId;
+  document.getElementById('f-units').innerHTML=avail.map(u=>`<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
+    <span class="uc ${u.type==='police'?'uc-p':u.type==='fire'?'uc-f':'uc-a'}">${u.id}</span><span>${u.name.substring(0,14)}</span>
+  </div>`).join('');
+  window._pendingIncPos=null; window._renforcerInc=incId;
   openModal('modal-inc');
 }
 
-// ════════════════════════════════
-//  DISPATCH + ANIMATION
-// ════════════════════════════════
+// ── DISPATCH + ANIMATION ──
 function buildPath(from,to,steps=180){
-  // Courbe de Bézier quadratique pour un trajet naturel
   const ctrl=[
-    (from[0]+to[0])/2+(Math.random()-.5)*Math.abs(to[0]-from[0])*0.7,
-    (from[1]+to[1])/2+(Math.random()-.5)*Math.abs(to[1]-from[1])*0.7
+    (from[0]+to[0])/2+(Math.random()-.5)*Math.abs(to[0]-from[0])*0.6,
+    (from[1]+to[1])/2+(Math.random()-.5)*Math.abs(to[1]-from[1])*0.6
   ];
   const pts=[];
   for(let i=0;i<=steps;i++){
@@ -751,25 +658,23 @@ function buildPath(from,to,steps=180){
   }
   return pts;
 }
-
 async function startDispatch(unitId,incidentId){
-  const units=S.get('units')||[],incidents=S.get('incidents')||[];
+  const units=S.get('units')||[], incidents=S.get('incidents')||[];
   const u=units.find(x=>x.id===unitId);
   const inc=incidents.find(x=>x.id===incidentId);
   if(!u||!inc) return;
-  notify(`🚨 ${unitId} → En route`,'warn');
+  notify(`${unitId} → En route`,'warn');
   const pts=buildPath(u.pos,inc.pos,180);
   if(routeLines[unitId]) map.removeLayer(routeLines[unitId]);
-  routeLines[unitId]=L.polyline(pts,{color:uColor(u),weight:2.5,opacity:.7,dashArray:'9,6'}).addTo(map);
+  routeLines[unitId]=L.polyline(pts,{color:uColor(u),weight:2,opacity:.65,dashArray:'8,5'}).addTo(map);
   const stepSize=Math.max(pts.length/350,0.04);
   animations[unitId]={pts,index:0,progress:0,stepSize,incidentId};
   updateStats();
 }
 
-// 10fps animation loop
 setInterval(()=>{
   if(!Object.keys(animations).length) return;
-  const units=S.get('units')||[];let changed=false;
+  const units=S.get('units')||[]; let changed=false;
   Object.entries(animations).forEach(([uid,anim])=>{
     anim.progress+=anim.stepSize;
     while(anim.progress>=1&&anim.index<anim.pts.length-1){anim.progress-=1;anim.index++;}
@@ -778,8 +683,8 @@ setInterval(()=>{
       if(u) u.pos=[...anim.pts[anim.pts.length-1]];
       delete animations[uid];
       if(routeLines[uid]){map.removeLayer(routeLines[uid]);delete routeLines[uid];}
-      notify(`✅ ${uid} — Sur les lieux`,'ok');
-      changed=true;return;
+      notify(`${uid} — Sur les lieux`,'ok');
+      changed=true; return;
     }
     const from=anim.pts[anim.index],to=anim.pts[Math.min(anim.index+1,anim.pts.length-1)];
     const t=Math.min(anim.progress,1);
@@ -792,36 +697,30 @@ setInterval(()=>{
   if(changed){S.set('units',units);updateStats();}
 },100);
 
-// ════════════════════════════════
-//  MODALS
-// ════════════════════════════════
+// ── MODALS ──
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(el=>
+document.querySelectorAll('.modal-ov').forEach(el=>
   el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');})
 );
 
-// ════════════════════════════════
-//  NOTIFS
-// ════════════════════════════════
+// ── NOTIFS ──
 function notify(msg,type='info'){
   const w=document.getElementById('notifs');
   const n=document.createElement('div');
-  n.className=`notif n-${type}`;n.textContent=msg;
-  w.appendChild(n);setTimeout(()=>n.remove(),5000);
+  n.className=`notif n-${type}`; n.textContent=msg;
+  w.appendChild(n); setTimeout(()=>n.remove(),5000);
 }
 
-// ════════════════════════════════
-//  SYNC + BOOT
-// ════════════════════════════════
+// ── SYNC + BOOT ──
 setInterval(()=>{
-  const ts=parseInt(localStorage.getItem('gta2_ts')||0);
+  const ts=parseInt(localStorage.getItem('gtav_ts')||0);
   if(ts>lastTs){lastTs=ts;renderSidebar();updateStats();}
 },1000);
 
 window.addEventListener('load',()=>{
-  initData();initMap();renderMap();
-  lastTs=parseInt(localStorage.getItem('gta2_ts')||0);
+  initData(); initMap(); renderMap();
+  lastTs=parseInt(localStorage.getItem('gtav_ts')||0);
 });
 </script>
 </body>
