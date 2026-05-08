@@ -37,7 +37,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;backgrou
 .btn-reset{margin-left:auto;padding:3px 8px;font-size:8px;font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--txt3);text-transform:uppercase;border-radius:2px;transition:all .15s}
 .btn-reset:hover{border-color:var(--red);color:var(--red)}
 .layout{display:flex;height:calc(100vh - 80px)}
-#map{flex:1;z-index:1;background:#0a0c10;position:relative}
+#map{flex:1;z-index:1;background:#050810;position:relative}
 #map.placing{cursor:crosshair!important}
 #banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2000;display:none;background:rgba(2,6,9,.97);border:1px solid var(--gold);border-radius:5px;padding:8px 14px;text-align:center;min-width:300px;box-shadow:0 0 30px rgba(255,184,0,.15)}
 #banner.show{display:block}
@@ -116,6 +116,8 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;backgrou
 .leaflet-control-zoom a:hover{background:var(--panel)!important;color:#fff!important}
 .leaflet-control-attribution{background:rgba(2,6,9,.8)!important;color:var(--txt3)!important;font-size:7px!important}
 .pp-btn{padding:3px 7px;font-size:8px;border-radius:2px;cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.5px;border:1px solid;transition:all .12s}
+/* Leaflet dark tile background */
+.leaflet-container{background:#050810!important}
 </style>
 </head>
 <body>
@@ -182,7 +184,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;backgrou
   <div class="modal">
     <div class="mh"><span class="mh-t" id="inc-modal-title">NOUVEL INCIDENT</span><button class="mh-x" onclick="closeIncModal()">✕</button></div>
     <div class="mb">
-      <div class="fg"><label class="fl">Position</label><div class="pos-b">📍 <span id="inc-pos-display">—</span></div></div>
+      <div class="fg"><label class="fl">Position (lat, lng)</label><div class="pos-b">📍 <span id="inc-pos-display">—</span></div></div>
       <div id="inc-form-fields">
         <div class="frow">
           <div class="fg"><label class="fl">Type</label>
@@ -219,7 +221,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;backgrou
   <div class="modal">
     <div class="mh"><span class="mh-t">NOUVELLE PATROUILLE</span><button class="mh-x" onclick="closeModal('modal-unit')">✕</button></div>
     <div class="mb">
-      <div class="fg"><label class="fl">Position</label><div class="pos-b">📍 <span id="unit-pos-display">—</span></div></div>
+      <div class="fg"><label class="fl">Position (lat, lng)</label><div class="pos-b">📍 <span id="unit-pos-display">—</span></div></div>
       <div class="frow">
         <div class="fg"><label class="fl">Indicatif</label><input class="fi" id="u-id" placeholder="Ex: LSPD-01"/></div>
         <div class="fg"><label class="fl">Type</label>
@@ -240,487 +242,546 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-// ── STORAGE (localStorage avec préfixe) ──
-const S={
-  get:k=>{try{return JSON.parse(localStorage.getItem('gtav_'+k))}catch{return null}},
-  set:(k,v)=>{localStorage.setItem('gtav_'+k,JSON.stringify(v));localStorage.setItem('gtav_ts',Date.now())}
+// ═══════════════════════════════════════════════════════════════════
+// SYSTÈME DE COORDONNÉES — GTA V Satellite 2048×2048
+// ═══════════════════════════════════════════════════════════════════
+//
+//  Image PNG : origine en haut-gauche, y croît vers le bas
+//  Leaflet CRS.Simple : lat croît vers le HAUT, lng vers la droite
+//
+//  Conversion : lat = IMG_SIZE - pixel_y   |   lng = pixel_x
+//
+//  Exemples (pixel depuis top-left → [lat, lng]) :
+//   Los Santos Downtown  (1250, 1600) → [448, 1250]
+//   LSIA Airport         (1000, 1820) → [228, 1000]
+//   Vespucci Beach       (1080, 1640) → [408, 1080]
+//   Maze Bank Tower      (1270, 1580) → [468, 1270]
+//   Sandy Shores         (1760,  900) → [1148,1760]
+//   Paleto Bay           ( 580,  240) → [1808, 580]
+//
+//  Bounds Leaflet ImageOverlay : [[0,0],[2048,2048]]
+//  → coin SW de l'overlay = [lat=0, lng=0] = coin bas-gauche de la carte
+//  → coin NE de l'overlay = [lat=2048, lng=2048] = coin haut-droit
+//  L'image est donc rendue avec son pixel (0,0) au coin NW = [lat=2048, lng=0]
+//  et son pixel (2048,2048) au coin SE = [lat=0, lng=2048]  ✓
+// ═══════════════════════════════════════════════════════════════════
+
+const IMG_URL  = 'https://www.bragitoff.com/wp-content/uploads/2015/11/GTAV_SATELLITE_2048x2048.png';
+const IMG_SIZE = 2048;
+
+// Bounds de l'overlay : [SW, NE]
+const BOUNDS = [[0, 0], [IMG_SIZE, IMG_SIZE]];
+
+// Vue initiale centrée sur Los Santos Downtown (pixel ~1250,1600 → lat 448, lng 1250)
+const CENTER_LAT = 448;
+const CENTER_LNG = 1250;
+const INIT_ZOOM  = 0;   // zoom 0 = vue d'ensemble, zoom 2 = détail
+
+// ── STORAGE ──
+const S = {
+  get: k => { try { return JSON.parse(localStorage.getItem('gtav5_' + k)) } catch { return null } },
+  set: (k, v) => { localStorage.setItem('gtav5_' + k, JSON.stringify(v)); localStorage.setItem('gtav5_ts', Date.now()) }
 };
-function initData(){
-  if(!S.get('units'))     S.set('units',[]);
-  if(!S.get('incidents')) S.set('incidents',[]);
+function initData() {
+  if (!S.get('units'))     S.set('units', []);
+  if (!S.get('incidents')) S.set('incidents', []);
 }
-function resetAll(){
-  if(!confirm('Supprimer toutes les données ?')) return;
-  Object.keys(localStorage).filter(k=>k.startsWith('gtav_')).forEach(k=>localStorage.removeItem(k));
-  Object.values(routeLines).forEach(l=>{try{map.removeLayer(l)}catch{}});
-  animations={};routeLines={};
-  initData();renderMap();notify('Données réinitialisées','ok');
+function resetAll() {
+  if (!confirm('Supprimer toutes les données ?')) return;
+  Object.keys(localStorage).filter(k => k.startsWith('gtav5_')).forEach(k => localStorage.removeItem(k));
+  Object.values(routeLines).forEach(l => { try { map.removeLayer(l) } catch {} });
+  animations = {}; routeLines = {};
+  initData(); renderMap(); notify('Données réinitialisées', 'ok');
 }
 
-// ── CLOCK ──
-setInterval(()=>{
-  const n=new Date();
-  document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
-},1000);
+// ── HORLOGE ──
+setInterval(() => {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
+}, 1000);
 
-// ── MAP ──
-// La carte GTA V satellite fait 2048x2048 px.
-// On utilise CRS.Simple. On mappe l'image entière sur les bounds [0,0] → [2048,2048].
-// Leaflet CRS.Simple : y croît vers le haut, mais les images PNG ont y vers le bas.
-// On utilise donc bounds = [[2048,0],[0,2048]] (coin haut-gauche = [2048,0], bas-droit = [0,2048])
-// pour que l'image s'affiche dans le bon sens.
+// ── CARTE ──
+let map, uMarkers = {}, iMarkers = {}, routeLines = {}, animations = {};
+let filterType = 'all', lastTs = 0;
 
-let map,uMarkers={},iMarkers={},routeLines={},animations={};
-let filterType='all',lastTs=0;
-
-const IMG_URL='https://www.bragitoff.com/wp-content/uploads/2015/11/GTAV_SATELLITE_2048x2048.png';
-const IMG_SIZE=2048;
-
-// Bounds : [SW, NE] en CRS.Simple = [[row_min, col_min],[row_max, col_max]]
-// On veut que l'image remplisse [0,0] à [2048,2048] dans l'espace de la carte.
-// SW = [0,0], NE = [2048, 2048]
-// Leaflet ImageOverlay : bounds = [[lat_min,lng_min],[lat_max,lng_max]]
-// Avec CRS.Simple : lat = y (vertical), lng = x (horizontal)
-// Image PNG : origine en haut-gauche. On veut origine (0,0) = coin haut-gauche de la carte GTA.
-// → lat_max = 2048 (haut), lat_min = 0 (bas), lng_min = 0 (gauche), lng_max = 2048 (droite)
-const BOUNDS = [[0,0],[IMG_SIZE,IMG_SIZE]];
-
-// Centre du jeu (Los Santos downtown ≈ centre de la carte)
-// D'après la carte satellite GTA V 2048x2048 :
-// Los Santos Downtown ≈ pixel (1200, 1700) depuis le coin haut-gauche
-// En CRS.Simple (y inversé) : lat = 2048 - 1700 = 348, lng = 1200
-const CENTER = [400, 1200];
-
-function initMap(){
-  map = L.map('map',{
-    crs: L.CRS.Simple,
-    minZoom: -2,
-    maxZoom: 3,
-    zoomControl: true,
+function initMap() {
+  map = L.map('map', {
+    crs:            L.CRS.Simple,
+    minZoom:        -2,
+    maxZoom:         3,
+    zoomControl:    true,
     attributionControl: true
   });
 
+  // Overlay de la carte satellite GTA V
   L.imageOverlay(IMG_URL, BOUNDS, {
     attribution: '© Rockstar Games — GTA V',
     opacity: 1,
     zIndex: 1
   }).addTo(map);
 
-  // Contraindre la vue aux bounds de la carte
-  map.setMaxBounds([[BOUNDS[0][0]-50, BOUNDS[0][1]-50],[BOUNDS[1][0]+50, BOUNDS[1][1]+50]]);
-  map.fitBounds(BOUNDS);
+  // Contraindre le pan aux limites de la carte (avec un peu de marge)
+  map.setMaxBounds([
+    [BOUNDS[0][0] - 100, BOUNDS[0][1] - 100],
+    [BOUNDS[1][0] + 100, BOUNDS[1][1] + 100]
+  ]);
+
+  // Vue initiale sur Los Santos Downtown
+  map.setView([CENTER_LAT, CENTER_LNG], INIT_ZOOM);
 
   map.on('click', onMapClick);
 }
 
-// Coordonnées utiles (y inversé : lat = 2048 - pixel_y, lng = pixel_x)
-// Pour mémoire : Los Santos Downtown ≈ lat=400, lng=1200
-
 // ── PLACEMENT ──
-let placingMode=null,placingMarker=null,pendingPos=null;
+let placingMode = null, placingMarker = null, pendingPos = null;
 
-function onMapClick(e){
-  if(!placingMode) return;
-  if(placingMarker) map.removeLayer(placingMarker);
-  placingMarker = L.marker([e.latlng.lat, e.latlng.lng],{
-    draggable:true,
-    icon: placingMode==='incident' ? makeIncPlacingIcon() : makeUnitPlacingIcon()
+function onMapClick(e) {
+  if (!placingMode) return;
+  if (placingMarker) map.removeLayer(placingMarker);
+  const pos = [e.latlng.lat, e.latlng.lng];
+  placingMarker = L.marker(pos, {
+    draggable: true,
+    icon: placingMode === 'incident' ? makeIncPlacingIcon() : makeUnitPlacingIcon()
   }).addTo(map);
-  pendingPos = [e.latlng.lat, e.latlng.lng];
-  placingMarker.on('dragend',()=>{
-    const p=placingMarker.getLatLng(); pendingPos=[p.lat,p.lng]; updateBannerConfirm();
+  pendingPos = pos;
+  placingMarker.on('dragend', () => {
+    const p = placingMarker.getLatLng();
+    pendingPos = [p.lat, p.lng];
+    updateBannerConfirm();
   });
   updateBannerConfirm();
 }
 
-function makeIncPlacingIcon(){
-  return L.divIcon({className:'',iconSize:[36,48],iconAnchor:[18,48],
-    html:`<div style="position:relative;width:36px">
+function makeIncPlacingIcon() {
+  return L.divIcon({
+    className: '', iconSize: [36, 48], iconAnchor: [18, 48],
+    html: `<div style="position:relative;width:36px">
       <div class="pulse-anim" style="width:36px;height:36px;background:#ff2020;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;border:2px solid rgba(255,255,255,.9)">!</div>
       <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:11px solid #ff2020"></div>
-    </div>`});
+    </div>`
+  });
 }
-function makeUnitPlacingIcon(){
-  return L.divIcon({className:'',iconSize:[34,46],iconAnchor:[17,46],
-    html:`<div style="position:relative;width:34px">
+function makeUnitPlacingIcon() {
+  return L.divIcon({
+    className: '', iconSize: [34, 46], iconAnchor: [17, 46],
+    html: `<div style="position:relative;width:34px">
       <div style="width:34px;height:34px;background:rgba(2,6,9,.97);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #ffb800">📌</div>
       <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:12px solid #ffb800"></div>
-    </div>`});
+    </div>`
+  });
 }
 
-function updateBannerConfirm(){
-  document.getElementById('bn-sub').textContent=`(${pendingPos[0].toFixed(0)}, ${pendingPos[1].toFixed(0)}) — Glissez pour ajuster`;
-  document.getElementById('bn-btns').innerHTML=`
+function updateBannerConfirm() {
+  // Affiche lat/lng et le pixel correspondant pour debug
+  const lat = pendingPos[0].toFixed(1), lng = pendingPos[1].toFixed(1);
+  const px  = lng, py = (IMG_SIZE - pendingPos[0]).toFixed(1);
+  document.getElementById('bn-sub').textContent =
+    `lat ${lat} · lng ${lng}  (px ≈ ${Math.round(px)}, ${Math.round(py)}) — Glissez pour ajuster`;
+  document.getElementById('bn-btns').innerHTML = `
     <button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>
     <button class="btn btn-ok btn-sm" onclick="confirmPlacing()">✓ CONFIRMER</button>`;
 }
 
-function startNewIncident(){
-  cancelPlacing(); placingMode='incident';
+function startNewIncident() {
+  cancelPlacing(); placingMode = 'incident';
   map.getContainer().classList.add('placing');
   document.getElementById('banner').classList.add('show');
-  document.getElementById('bn-title').textContent='PLACEMENT INCIDENT';
-  document.getElementById('bn-sub').textContent='Cliquez sur la carte GTA V';
-  document.getElementById('bn-btns').innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
+  document.getElementById('bn-title').textContent = 'PLACEMENT INCIDENT';
+  document.getElementById('bn-sub').textContent   = 'Cliquez sur la carte GTA V';
+  document.getElementById('bn-btns').innerHTML    = `<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
 }
-function startNewUnit(){
-  cancelPlacing(); placingMode='unit';
+function startNewUnit() {
+  cancelPlacing(); placingMode = 'unit';
   map.getContainer().classList.add('placing');
   document.getElementById('banner').classList.add('show');
-  document.getElementById('bn-title').textContent='PLACEMENT PATROUILLE';
-  document.getElementById('bn-sub').textContent='Cliquez sur la carte GTA V';
-  document.getElementById('bn-btns').innerHTML=`<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
+  document.getElementById('bn-title').textContent = 'PLACEMENT PATROUILLE';
+  document.getElementById('bn-sub').textContent   = 'Cliquez sur la carte GTA V';
+  document.getElementById('bn-btns').innerHTML    = `<button class="btn btn-danger btn-sm" onclick="cancelPlacing()">✕ ANNULER</button>`;
 }
-function cancelPlacing(){
-  placingMode=null; pendingPos=null;
-  if(placingMarker){map.removeLayer(placingMarker);placingMarker=null;}
+function cancelPlacing() {
+  placingMode = null; pendingPos = null;
+  if (placingMarker) { map.removeLayer(placingMarker); placingMarker = null; }
   map.getContainer().classList.remove('placing');
   document.getElementById('banner').classList.remove('show');
 }
-function confirmPlacing(){
-  if(!pendingPos) return;
-  const mode=placingMode, pos=[...pendingPos];
-  placingMode=null;
+function confirmPlacing() {
+  if (!pendingPos) return;
+  const mode = placingMode, pos = [...pendingPos];
+  placingMode = null;
   map.getContainer().classList.remove('placing');
   document.getElementById('banner').classList.remove('show');
-  if(mode==='incident'){
-    document.getElementById('inc-modal-title').textContent='NOUVEL INCIDENT';
-    document.getElementById('inc-pos-display').textContent=`${pos[0].toFixed(0)}, ${pos[1].toFixed(0)}`;
-    document.getElementById('inc-form-fields').style.display='';
-    document.getElementById('btn-create-inc').textContent='CRÉER + DISPATCHER';
-    document.getElementById('f-desc').value='';
-    document.getElementById('f-type').selectedIndex=0;
-    document.getElementById('f-prio').selectedIndex=0;
-    window._renforcerInc=null;
-    const avail=(S.get('units')||[]).filter(u=>u.status==='available');
-    document.getElementById('f-units').innerHTML=avail.length
-      ?avail.map(u=>`<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
-          <span class="uc ${u.type==='police'?'uc-p':u.type==='fire'?'uc-f':'uc-a'}">${u.id}</span><span>${u.name.substring(0,14)}</span>
+
+  if (mode === 'incident') {
+    document.getElementById('inc-modal-title').textContent = 'NOUVEL INCIDENT';
+    document.getElementById('inc-pos-display').textContent = `${pos[0].toFixed(1)}, ${pos[1].toFixed(1)}`;
+    document.getElementById('inc-form-fields').style.display = '';
+    document.getElementById('btn-create-inc').textContent   = 'CRÉER + DISPATCHER';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-type').selectedIndex = 0;
+    document.getElementById('f-prio').selectedIndex = 0;
+    window._renforcerInc = null;
+    const avail = (S.get('units') || []).filter(u => u.status === 'available');
+    document.getElementById('f-units').innerHTML = avail.length
+      ? avail.map(u => `<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
+          <span class="uc ${u.type === 'police' ? 'uc-p' : u.type === 'fire' ? 'uc-f' : 'uc-a'}">${u.id}</span>
+          <span>${u.name.substring(0, 14)}</span>
         </div>`).join('')
-      :'<p style="color:var(--txt2);font-size:9px;padding:5px 0;grid-column:1/-1">Aucune patrouille disponible</p>';
-    window._pendingIncPos=pos;
+      : '<p style="color:var(--txt2);font-size:9px;padding:5px 0;grid-column:1/-1">Aucune patrouille disponible</p>';
+    window._pendingIncPos = pos;
     openModal('modal-inc');
   } else {
-    document.getElementById('unit-pos-display').textContent=`${pos[0].toFixed(0)}, ${pos[1].toFixed(0)}`;
-    document.getElementById('u-id').value=''; document.getElementById('u-name').value='';
-    window._pendingUnitPos=pos;
+    document.getElementById('unit-pos-display').textContent = `${pos[0].toFixed(1)}, ${pos[1].toFixed(1)}`;
+    document.getElementById('u-id').value = '';
+    document.getElementById('u-name').value = '';
+    window._pendingUnitPos = pos;
     openModal('modal-unit');
   }
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape')cancelPlacing();});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cancelPlacing(); });
 
 // ── INCIDENT ──
-async function createIncident(){
-  if(window._renforcerInc){
-    const incId=window._renforcerInc; window._renforcerInc=null;
-    const sel=[...document.querySelectorAll('#f-units .ug-item.sel')].map(el=>el.dataset.uid);
-    if(!sel.length){notify('Sélectionnez une patrouille','err');return;}
-    const units=S.get('units')||[],incidents=S.get('incidents')||[];
-    sel.forEach(uid=>{const u=units.find(x=>x.id===uid);if(u){u.status='dispatched';u.incident=incId;}});
-    const inc=incidents.find(i=>i.id===incId);
-    if(inc) inc.units=[...new Set([...inc.units,...sel])];
-    S.set('units',units); S.set('incidents',incidents);
+async function createIncident() {
+  if (window._renforcerInc) {
+    const incId = window._renforcerInc; window._renforcerInc = null;
+    const sel   = [...document.querySelectorAll('#f-units .ug-item.sel')].map(el => el.dataset.uid);
+    if (!sel.length) { notify('Sélectionnez une patrouille', 'err'); return; }
+    const units = S.get('units') || [], incidents = S.get('incidents') || [];
+    sel.forEach(uid => { const u = units.find(x => x.id === uid); if (u) { u.status = 'dispatched'; u.incident = incId; } });
+    const inc = incidents.find(i => i.id === incId);
+    if (inc) inc.units = [...new Set([...inc.units, ...sel])];
+    S.set('units', units); S.set('incidents', incidents);
     closeIncModal(); renderMap();
-    notify(`Renfort → ${incId}`,'warn');
-    for(const uid of sel) await startDispatch(uid,incId);
+    notify(`Renfort → ${incId}`, 'warn');
+    for (const uid of sel) await startDispatch(uid, incId);
     return;
   }
-  const pos=window._pendingIncPos;
-  if(!pos){notify('Position manquante','err');return;}
-  const type=document.getElementById('f-type').value;
-  const prio=parseInt(document.getElementById('f-prio').value);
-  const desc=document.getElementById('f-desc').value||'—';
-  const sel=[...document.querySelectorAll('#f-units .ug-item.sel')].map(el=>el.dataset.uid);
-  const incidents=S.get('incidents')||[];
-  const id='INC'+String(incidents.length+1).padStart(3,'0');
-  incidents.push({id,type,priority:prio,desc,pos,status:sel.length?'active':'pending',units:sel,time:Date.now()});
-  S.set('incidents',incidents);
-  const units=S.get('units')||[];
-  sel.forEach(uid=>{const u=units.find(x=>x.id===uid);if(u){u.status='dispatched';u.incident=id;}});
-  S.set('units',units);
-  if(placingMarker){map.removeLayer(placingMarker);placingMarker=null;}
+  const pos = window._pendingIncPos;
+  if (!pos) { notify('Position manquante', 'err'); return; }
+  const type = document.getElementById('f-type').value;
+  const prio = parseInt(document.getElementById('f-prio').value);
+  const desc = document.getElementById('f-desc').value || '—';
+  const sel  = [...document.querySelectorAll('#f-units .ug-item.sel')].map(el => el.dataset.uid);
+  const incidents = S.get('incidents') || [];
+  const id = 'INC' + String(incidents.length + 1).padStart(3, '0');
+  incidents.push({ id, type, priority: prio, desc, pos, status: sel.length ? 'active' : 'pending', units: sel, time: Date.now() });
+  S.set('incidents', incidents);
+  const units = S.get('units') || [];
+  sel.forEach(uid => { const u = units.find(x => x.id === uid); if (u) { u.status = 'dispatched'; u.incident = id; } });
+  S.set('units', units);
+  if (placingMarker) { map.removeLayer(placingMarker); placingMarker = null; }
   closeIncModal(); renderMap();
-  map.flyTo(pos,1,{animate:true,duration:0.8});
-  notify(`${id} — ${type}`,prio===1?'err':prio===2?'warn':'info');
-  for(const uid of sel) await startDispatch(uid,id);
+  map.flyTo(pos, 1, { animate: true, duration: 0.8 });
+  notify(`${id} — ${type}`, prio === 1 ? 'err' : prio === 2 ? 'warn' : 'info');
+  for (const uid of sel) await startDispatch(uid, id);
 }
-function closeIncModal(){
-  window._renforcerInc=null; window._pendingIncPos=null;
-  document.getElementById('inc-form-fields').style.display='';
-  document.getElementById('btn-create-inc').textContent='CRÉER + DISPATCHER';
+function closeIncModal() {
+  window._renforcerInc = null; window._pendingIncPos = null;
+  document.getElementById('inc-form-fields').style.display = '';
+  document.getElementById('btn-create-inc').textContent    = 'CRÉER + DISPATCHER';
   closeModal('modal-inc');
 }
 
 // ── PATROUILLE ──
-function createUnit(){
-  const pos=window._pendingUnitPos;
-  if(!pos){notify('Position manquante','err');return;}
-  const id=document.getElementById('u-id').value.trim();
-  const type=document.getElementById('u-type').value;
-  const name=document.getElementById('u-name').value.trim()||id;
-  if(!id){notify('Indicatif requis','err');return;}
-  const units=S.get('units')||[];
-  if(units.find(u=>u.id===id)){notify('Indicatif déjà utilisé','err');return;}
-  units.push({id,name,type,status:'available',pos:[...pos],basePos:[...pos],incident:null});
-  S.set('units',units);
-  if(placingMarker){map.removeLayer(placingMarker);placingMarker=null;}
+function createUnit() {
+  const pos = window._pendingUnitPos;
+  if (!pos) { notify('Position manquante', 'err'); return; }
+  const id   = document.getElementById('u-id').value.trim();
+  const type = document.getElementById('u-type').value;
+  const name = document.getElementById('u-name').value.trim() || id;
+  if (!id) { notify('Indicatif requis', 'err'); return; }
+  const units = S.get('units') || [];
+  if (units.find(u => u.id === id)) { notify('Indicatif déjà utilisé', 'err'); return; }
+  units.push({ id, name, type, status: 'available', pos: [...pos], basePos: [...pos], incident: null });
+  S.set('units', units);
+  if (placingMarker) { map.removeLayer(placingMarker); placingMarker = null; }
   closeModal('modal-unit'); renderMap();
-  notify(`${id} ajouté`,'ok');
+  notify(`${id} ajouté`, 'ok');
 }
 
 // ── ICÔNES ──
-function uColor(u){return{police:'#3b9eff',fire:'#ff4040',ambulance:'#00d4a0'}[u.type]||'#fff';}
-function makeUIcon(u,moving=false){
-  const c=uColor(u);
-  const lbl=u.id.length>7?u.id.slice(0,7):u.id;
-  const dot=moving?`<div style="position:absolute;bottom:-2px;right:-2px;width:5px;height:5px;background:${c};border-radius:50%;animation:blink .5s infinite"></div>`:'';
-  return L.divIcon({className:'',iconSize:[34,34],iconAnchor:[17,17],
-    html:`<div style="position:relative;width:34px;height:34px;border-radius:4px;background:rgba(2,6,9,.95);border:${moving?'2px':'1px'} solid ${c};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:7px;color:${c};font-family:monospace;letter-spacing:.3px">${lbl}${dot}</div>`});
+function uColor(u) {
+  return { police: '#3b9eff', fire: '#ff4040', ambulance: '#00d4a0' }[u.type] || '#fff';
 }
-function makeIIcon(inc){
-  const c={1:'#ff2020',2:'#ffb800',3:'#3b9eff'}[inc.priority];
-  const sz=inc.priority===1?38:32;
-  return L.divIcon({className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],
-    html:`<div ${inc.priority===1?'class="pulse-anim"':''} style="width:${sz}px;height:${sz}px;border-radius:4px;background:${c};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px;color:${inc.priority===2?'#000':'#fff'};border:2px solid rgba(255,255,255,.85)">P${inc.priority}</div>`});
+function makeUIcon(u, moving = false) {
+  const c   = uColor(u);
+  const lbl = u.id.length > 7 ? u.id.slice(0, 7) : u.id;
+  const dot = moving
+    ? `<div style="position:absolute;bottom:-2px;right:-2px;width:5px;height:5px;background:${c};border-radius:50%;animation:blink .5s infinite"></div>`
+    : '';
+  return L.divIcon({
+    className: '', iconSize: [34, 34], iconAnchor: [17, 17],
+    html: `<div style="position:relative;width:34px;height:34px;border-radius:4px;background:rgba(2,6,9,.95);border:${moving ? '2px' : '1px'} solid ${c};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:7px;color:${c};font-family:monospace;letter-spacing:.3px">${lbl}${dot}</div>`
+  });
+}
+function makeIIcon(inc) {
+  const c  = { 1: '#ff2020', 2: '#ffb800', 3: '#3b9eff' }[inc.priority];
+  const sz = inc.priority === 1 ? 38 : 32;
+  return L.divIcon({
+    className: '', iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2],
+    html: `<div ${inc.priority === 1 ? 'class="pulse-anim"' : ''} style="width:${sz}px;height:${sz}px;border-radius:4px;background:${c};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px;color:${inc.priority === 2 ? '#000' : '#fff'};border:2px solid rgba(255,255,255,.85)">P${inc.priority}</div>`
+  });
 }
 
-// ── RENDER ──
-function renderMap(){
-  const units=S.get('units')||[], incidents=S.get('incidents')||[];
-  Object.values(uMarkers).forEach(m=>{try{map.removeLayer(m)}catch{}});
-  Object.values(iMarkers).forEach(m=>{try{map.removeLayer(m)}catch{}});
-  uMarkers={}; iMarkers={};
+// ── RENDU ──
+function renderMap() {
+  const units = S.get('units') || [], incidents = S.get('incidents') || [];
+  Object.values(uMarkers).forEach(m => { try { map.removeLayer(m) } catch {} });
+  Object.values(iMarkers).forEach(m => { try { map.removeLayer(m) } catch {} });
+  uMarkers = {}; iMarkers = {};
 
-  units.forEach(u=>{
-    if(filterType!=='all'&&u.type!==filterType) return;
-    const moving=!!animations[u.id];
-    const m=L.marker(u.pos,{icon:makeUIcon(u,moving),zIndexOffset:moving?200:0}).addTo(map);
-    const sl={available:'Disponible',dispatched:'En intervention'}[u.status]||u.status;
+  units.forEach(u => {
+    if (filterType !== 'all' && u.type !== filterType) return;
+    const moving = !!animations[u.id];
+    const m = L.marker(u.pos, { icon: makeUIcon(u, moving), zIndexOffset: moving ? 200 : 0 }).addTo(map);
+    const sl = { available: 'Disponible', dispatched: 'En intervention' }[u.status] || u.status;
     m.bindPopup(`<div style="min-width:150px">
       <b style="font-size:12px;color:#fff">${u.id}</b><br>
       <span style="color:#7a9ab0;font-size:9px">${u.name}</span>
       <hr style="border-color:#1c3048;margin:4px 0">
       <div style="font-size:10px;margin-bottom:3px">${sl}</div>
-      ${u.incident?`<div style="font-size:9px;color:#ffb800">→ ${u.incident}</div>`:''}
+      ${u.incident ? `<div style="font-size:9px;color:#ffb800">→ ${u.incident}</div>` : ''}
+      <div style="font-size:8px;color:#3a6080;margin-top:2px">lat ${u.pos[0].toFixed(1)} · lng ${u.pos[1].toFixed(1)}</div>
       <div style="margin-top:7px">
         <button class="pp-btn" onclick="deleteUnit('${u.id}')" style="color:var(--red);border-color:var(--red)">Supprimer</button>
       </div>
     </div>`);
-    uMarkers[u.id]=m;
+    uMarkers[u.id] = m;
   });
 
-  incidents.forEach(inc=>{
-    const closed=inc.status==='closed';
-    const m=L.marker(inc.pos,{icon:makeIIcon(inc),zIndexOffset:closed?0:500,opacity:closed?0.4:1}).addTo(map);
-    const elapsed=Math.floor((Date.now()-inc.time)/60000);
-    const actionBtns=closed
-      ?`<div style="margin-top:7px"><button class="pp-btn" onclick="deleteIncident('${inc.id}')" style="color:var(--red);border-color:var(--red);width:100%">Supprimer</button></div>`
-      :`<div style="margin-top:7px;display:flex;gap:4px">
+  incidents.forEach(inc => {
+    const closed  = inc.status === 'closed';
+    const m       = L.marker(inc.pos, { icon: makeIIcon(inc), zIndexOffset: closed ? 0 : 500, opacity: closed ? 0.4 : 1 }).addTo(map);
+    const elapsed = Math.floor((Date.now() - inc.time) / 60000);
+    const actionBtns = closed
+      ? `<div style="margin-top:7px"><button class="pp-btn" onclick="deleteIncident('${inc.id}')" style="color:var(--red);border-color:var(--red);width:100%">Supprimer</button></div>`
+      : `<div style="margin-top:7px;display:flex;gap:4px">
           <button class="pp-btn" onclick="openRenfort('${inc.id}')" style="color:#ffb800;border-color:#ffb800;flex:1">+ Renfort</button>
           <button class="pp-btn" onclick="closeIncident('${inc.id}')" style="color:var(--amb);border-color:var(--amb);flex:1">✓ Clôturer</button>
         </div>`;
     m.bindPopup(`<div style="min-width:165px">
       <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
         <b style="font-size:11px;color:#fff">${inc.id}</b>
-        ${closed?`<span style="font-size:7px;color:var(--amb);border:1px solid var(--amb);border-radius:2px;padding:1px 4px">CLÔTURÉ</span>`:''}
+        ${closed ? `<span style="font-size:7px;color:var(--amb);border:1px solid var(--amb);border-radius:2px;padding:1px 4px">CLÔTURÉ</span>` : ''}
       </div>
       <span style="color:#ffb800;font-size:10px">${inc.type}</span>
       <hr style="border-color:#1c3048;margin:4px 0">
-      <span style="font-size:9px;color:#7a9ab0">⏱ ${elapsed}min · ${inc.units.join(', ')||'Aucune'}</span>
-      ${inc.desc!=='—'?`<div style="font-size:8px;color:#7a9ab0;margin-top:2px">${inc.desc}</div>`:''}
+      <span style="font-size:9px;color:#7a9ab0">⏱ ${elapsed}min · ${inc.units.join(', ') || 'Aucune'}</span>
+      ${inc.desc !== '—' ? `<div style="font-size:8px;color:#7a9ab0;margin-top:2px">${inc.desc}</div>` : ''}
       ${actionBtns}
     </div>`);
-    iMarkers[inc.id]=m;
+    iMarkers[inc.id] = m;
   });
 
   renderSidebar(); updateStats();
 }
 
-function renderSidebar(){
-  const units=S.get('units')||[], incidents=S.get('incidents')||[];
-  const active=incidents.filter(i=>i.status!=='closed');
-  document.getElementById('cnt-inc').textContent=active.length;
-  document.getElementById('list-inc').innerHTML=active.length
-    ?active.map(inc=>{
-      const c={1:'var(--red)',2:'var(--gold)',3:'var(--police)'}[inc.priority];
-      const elapsed=Math.floor((Date.now()-inc.time)/60000);
-      return `<div class="sb-item" onclick="flyToInc('${inc.id}')">
-        <div class="sb-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div>
-        <div class="sb-info"><div class="sb-name">${inc.type}</div><div class="sb-sub">${inc.id} · ${elapsed}min</div></div>
-        <span class="sb-tag ${inc.status==='active'?'tag-dep':'tag-dispo'}">${inc.status==='active'?'ACTIF':'ATT.'}</span>
-      </div>`;
-    }).join('')
-    :'<div class="sb-empty">Aucun incident actif</div>';
+function renderSidebar() {
+  const units = S.get('units') || [], incidents = S.get('incidents') || [];
+  const active = incidents.filter(i => i.status !== 'closed');
+  document.getElementById('cnt-inc').textContent = active.length;
+  document.getElementById('list-inc').innerHTML  = active.length
+    ? active.map(inc => {
+        const c       = { 1: 'var(--red)', 2: 'var(--gold)', 3: 'var(--police)' }[inc.priority];
+        const elapsed = Math.floor((Date.now() - inc.time) / 60000);
+        return `<div class="sb-item" onclick="flyToInc('${inc.id}')">
+          <div class="sb-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div>
+          <div class="sb-info"><div class="sb-name">${inc.type}</div><div class="sb-sub">${inc.id} · ${elapsed}min</div></div>
+          <span class="sb-tag ${inc.status === 'active' ? 'tag-dep' : 'tag-dispo'}">${inc.status === 'active' ? 'ACTIF' : 'ATT.'}</span>
+        </div>`;
+      }).join('')
+    : '<div class="sb-empty">Aucun incident actif</div>';
 
-  const filt=filterType==='all'?units:units.filter(u=>u.type===filterType);
-  document.getElementById('cnt-units').textContent=filt.length;
-  document.getElementById('list-units').innerHTML=filt.length
-    ?filt.map(u=>{
-      const c=uColor(u); const moving=!!animations[u.id];
-      const tag=moving?'tag-route':u.status==='available'?'tag-dispo':'tag-dep';
-      return `<div class="sb-item" onclick="flyToUnit('${u.id}')">
-        <div class="sb-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div>
-        <div class="sb-info"><div class="sb-name">${u.id} — ${u.name.substring(0,13)}</div><div class="sb-sub">${u.incident?'→ '+u.incident:'Disponible'}</div></div>
-        <span class="sb-tag ${tag}">${moving?'ROUTE':u.status==='available'?'DISPO':'DEP.'}</span>
-      </div>`;
-    }).join('')
-    :'<div class="sb-empty">Aucune patrouille</div>';
-}
-
-function updateStats(){
-  const units=S.get('units')||[], incidents=S.get('incidents')||[];
-  document.getElementById('st-active').textContent=incidents.filter(i=>i.status==='active').length;
-  document.getElementById('st-dispo').textContent=units.filter(u=>u.status==='available').length;
-  document.getElementById('st-route').textContent=Object.keys(animations).length;
-  document.getElementById('nav-inc-badge').textContent=incidents.filter(i=>i.status!=='closed').length;
-  document.getElementById('nav-pat-badge').textContent=units.length;
+  const filt = filterType === 'all' ? units : units.filter(u => u.type === filterType);
+  document.getElementById('cnt-units').textContent   = filt.length;
+  document.getElementById('list-units').innerHTML    = filt.length
+    ? filt.map(u => {
+        const c      = uColor(u);
+        const moving = !!animations[u.id];
+        const tag    = moving ? 'tag-route' : u.status === 'available' ? 'tag-dispo' : 'tag-dep';
+        return `<div class="sb-item" onclick="flyToUnit('${u.id}')">
+          <div class="sb-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div>
+          <div class="sb-info"><div class="sb-name">${u.id} — ${u.name.substring(0, 13)}</div><div class="sb-sub">${u.incident ? '→ ' + u.incident : 'Disponible'}</div></div>
+          <span class="sb-tag ${tag}">${moving ? 'ROUTE' : u.status === 'available' ? 'DISPO' : 'DEP.'}</span>
+        </div>`;
+      }).join('')
+    : '<div class="sb-empty">Aucune patrouille</div>';
 }
 
-function flyToInc(id){
-  const inc=(S.get('incidents')||[]).find(i=>i.id===id);
-  if(!inc) return;
-  map.flyTo(inc.pos,1,{animate:true,duration:0.9});
-  setTimeout(()=>{if(iMarkers[id])iMarkers[id].openPopup();},1000);
+function updateStats() {
+  const units = S.get('units') || [], incidents = S.get('incidents') || [];
+  document.getElementById('st-active').textContent    = incidents.filter(i => i.status === 'active').length;
+  document.getElementById('st-dispo').textContent     = units.filter(u => u.status === 'available').length;
+  document.getElementById('st-route').textContent     = Object.keys(animations).length;
+  document.getElementById('nav-inc-badge').textContent = incidents.filter(i => i.status !== 'closed').length;
+  document.getElementById('nav-pat-badge').textContent = units.length;
 }
-function flyToUnit(id){
-  const u=(S.get('units')||[]).find(u=>u.id===id);
-  if(!u) return;
-  map.flyTo(u.pos,1,{animate:true,duration:0.9});
-  setTimeout(()=>{if(uMarkers[id])uMarkers[id].openPopup();},1000);
+
+function flyToInc(id) {
+  const inc = (S.get('incidents') || []).find(i => i.id === id);
+  if (!inc) return;
+  map.flyTo(inc.pos, 1, { animate: true, duration: 0.9 });
+  setTimeout(() => { if (iMarkers[id]) iMarkers[id].openPopup(); }, 1000);
 }
-function setFilter(type,btn){
-  filterType=type;
-  document.querySelectorAll('.sf').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on'); renderMap();
+function flyToUnit(id) {
+  const u = (S.get('units') || []).find(u => u.id === id);
+  if (!u) return;
+  map.flyTo(u.pos, 1, { animate: true, duration: 0.9 });
+  setTimeout(() => { if (uMarkers[id]) uMarkers[id].openPopup(); }, 1000);
+}
+function setFilter(type, btn) {
+  filterType = type;
+  document.querySelectorAll('.sf').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderMap();
 }
 
 // ── ACTIONS ──
-function closeIncident(incId){
-  const incidents=S.get('incidents')||[];
-  const inc=incidents.find(i=>i.id===incId); if(!inc) return;
-  inc.status='closed'; S.set('incidents',incidents);
-  const units=S.get('units')||[];
-  units.forEach(u=>{
-    if(u.incident===incId){
-      u.status='available'; u.incident=null;
-      if(u.basePos) u.pos=[...u.basePos];
-      if(animations[u.id]){delete animations[u.id];if(routeLines[u.id]){map.removeLayer(routeLines[u.id]);delete routeLines[u.id];}}
+function closeIncident(incId) {
+  const incidents = S.get('incidents') || [];
+  const inc = incidents.find(i => i.id === incId); if (!inc) return;
+  inc.status = 'closed'; S.set('incidents', incidents);
+  const units = S.get('units') || [];
+  units.forEach(u => {
+    if (u.incident === incId) {
+      u.status = 'available'; u.incident = null;
+      if (u.basePos) u.pos = [...u.basePos];
+      if (animations[u.id]) {
+        delete animations[u.id];
+        if (routeLines[u.id]) { map.removeLayer(routeLines[u.id]); delete routeLines[u.id]; }
+      }
     }
   });
-  S.set('units',units); map.closePopup(); renderMap();
-  notify(`${incId} — Clôturé`,'ok');
+  S.set('units', units); map.closePopup(); renderMap();
+  notify(`${incId} — Clôturé`, 'ok');
 }
-function deleteIncident(incId){
-  const incidents=S.get('incidents')||[];
-  const idx=incidents.findIndex(i=>i.id===incId); if(idx===-1) return;
-  incidents.splice(idx,1); S.set('incidents',incidents);
-  if(iMarkers[incId]){map.removeLayer(iMarkers[incId]);delete iMarkers[incId];}
-  map.closePopup(); renderMap(); notify(`${incId} — Supprimé`,'ok');
+function deleteIncident(incId) {
+  const incidents = S.get('incidents') || [];
+  const idx = incidents.findIndex(i => i.id === incId); if (idx === -1) return;
+  incidents.splice(idx, 1); S.set('incidents', incidents);
+  if (iMarkers[incId]) { map.removeLayer(iMarkers[incId]); delete iMarkers[incId]; }
+  map.closePopup(); renderMap(); notify(`${incId} — Supprimé`, 'ok');
 }
-function deleteUnit(uid){
-  if(!confirm(`Supprimer ${uid} ?`)) return;
-  const units=S.get('units')||[];
-  const idx=units.findIndex(u=>u.id===uid); if(idx===-1) return;
-  units.splice(idx,1); S.set('units',units);
-  if(animations[uid]) delete animations[uid];
-  if(routeLines[uid]){map.removeLayer(routeLines[uid]);delete routeLines[uid];}
-  if(uMarkers[uid]){map.removeLayer(uMarkers[uid]);delete uMarkers[uid];}
-  map.closePopup(); renderMap(); notify(`${uid} — Supprimé`,'ok');
+function deleteUnit(uid) {
+  if (!confirm(`Supprimer ${uid} ?`)) return;
+  const units = S.get('units') || [];
+  const idx = units.findIndex(u => u.id === uid); if (idx === -1) return;
+  units.splice(idx, 1); S.set('units', units);
+  if (animations[uid]) delete animations[uid];
+  if (routeLines[uid]) { map.removeLayer(routeLines[uid]); delete routeLines[uid]; }
+  if (uMarkers[uid])   { map.removeLayer(uMarkers[uid]);   delete uMarkers[uid]; }
+  map.closePopup(); renderMap(); notify(`${uid} — Supprimé`, 'ok');
 }
-function openRenfort(incId){
+function openRenfort(incId) {
   map.closePopup();
-  const avail=(S.get('units')||[]).filter(u=>u.status==='available');
-  if(!avail.length){notify('Aucune patrouille disponible','err');return;}
-  document.getElementById('inc-modal-title').textContent='ENVOYER RENFORT';
-  document.getElementById('inc-pos-display').textContent=`Renfort → ${incId}`;
-  document.getElementById('inc-form-fields').style.display='none';
-  document.getElementById('btn-create-inc').textContent='ENVOYER RENFORT';
-  document.getElementById('f-units').innerHTML=avail.map(u=>`<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
-    <span class="uc ${u.type==='police'?'uc-p':u.type==='fire'?'uc-f':'uc-a'}">${u.id}</span><span>${u.name.substring(0,14)}</span>
-  </div>`).join('');
-  window._pendingIncPos=null; window._renforcerInc=incId;
+  const avail = (S.get('units') || []).filter(u => u.status === 'available');
+  if (!avail.length) { notify('Aucune patrouille disponible', 'err'); return; }
+  document.getElementById('inc-modal-title').textContent = 'ENVOYER RENFORT';
+  document.getElementById('inc-pos-display').textContent = `Renfort → ${incId}`;
+  document.getElementById('inc-form-fields').style.display = 'none';
+  document.getElementById('btn-create-inc').textContent    = 'ENVOYER RENFORT';
+  document.getElementById('f-units').innerHTML = avail.map(u =>
+    `<div class="ug-item" onclick="this.classList.toggle('sel')" data-uid="${u.id}">
+      <span class="uc ${u.type === 'police' ? 'uc-p' : u.type === 'fire' ? 'uc-f' : 'uc-a'}">${u.id}</span>
+      <span>${u.name.substring(0, 14)}</span>
+    </div>`
+  ).join('');
+  window._pendingIncPos = null; window._renforcerInc = incId;
   openModal('modal-inc');
 }
 
 // ── DISPATCH + ANIMATION ──
-function buildPath(from,to,steps=180){
-  const ctrl=[
-    (from[0]+to[0])/2+(Math.random()-.5)*Math.abs(to[0]-from[0])*0.6,
-    (from[1]+to[1])/2+(Math.random()-.5)*Math.abs(to[1]-from[1])*0.6
+function buildPath(from, to, steps = 200) {
+  // Bezier quadratique avec un point de contrôle décalé aléatoirement
+  const ctrl = [
+    (from[0] + to[0]) / 2 + (Math.random() - .5) * Math.abs(to[0] - from[0]) * 0.5,
+    (from[1] + to[1]) / 2 + (Math.random() - .5) * Math.abs(to[1] - from[1]) * 0.5
   ];
-  const pts=[];
-  for(let i=0;i<=steps;i++){
-    const t=i/steps;
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
     pts.push([
-      (1-t)*(1-t)*from[0]+2*(1-t)*t*ctrl[0]+t*t*to[0],
-      (1-t)*(1-t)*from[1]+2*(1-t)*t*ctrl[1]+t*t*to[1]
+      (1 - t) * (1 - t) * from[0] + 2 * (1 - t) * t * ctrl[0] + t * t * to[0],
+      (1 - t) * (1 - t) * from[1] + 2 * (1 - t) * t * ctrl[1] + t * t * to[1]
     ]);
   }
   return pts;
 }
-async function startDispatch(unitId,incidentId){
-  const units=S.get('units')||[], incidents=S.get('incidents')||[];
-  const u=units.find(x=>x.id===unitId);
-  const inc=incidents.find(x=>x.id===incidentId);
-  if(!u||!inc) return;
-  notify(`${unitId} → En route`,'warn');
-  const pts=buildPath(u.pos,inc.pos,180);
-  if(routeLines[unitId]) map.removeLayer(routeLines[unitId]);
-  routeLines[unitId]=L.polyline(pts,{color:uColor(u),weight:2,opacity:.65,dashArray:'8,5'}).addTo(map);
-  const stepSize=Math.max(pts.length/350,0.04);
-  animations[unitId]={pts,index:0,progress:0,stepSize,incidentId};
+
+async function startDispatch(unitId, incidentId) {
+  const units = S.get('units') || [], incidents = S.get('incidents') || [];
+  const u   = units.find(x => x.id === unitId);
+  const inc = incidents.find(x => x.id === incidentId);
+  if (!u || !inc) return;
+  notify(`${unitId} → En route`, 'warn');
+  const pts = buildPath(u.pos, inc.pos, 200);
+  if (routeLines[unitId]) map.removeLayer(routeLines[unitId]);
+  routeLines[unitId] = L.polyline(pts, {
+    color: uColor(u), weight: 2, opacity: .7, dashArray: '8 5'
+  }).addTo(map);
+  const stepSize = Math.max(pts.length / 400, 0.03);
+  animations[unitId] = { pts, index: 0, progress: 0, stepSize, incidentId };
   updateStats();
 }
 
-setInterval(()=>{
-  if(!Object.keys(animations).length) return;
-  const units=S.get('units')||[]; let changed=false;
-  Object.entries(animations).forEach(([uid,anim])=>{
-    anim.progress+=anim.stepSize;
-    while(anim.progress>=1&&anim.index<anim.pts.length-1){anim.progress-=1;anim.index++;}
-    if(anim.index>=anim.pts.length-1){
-      const u=units.find(x=>x.id===uid);
-      if(u) u.pos=[...anim.pts[anim.pts.length-1]];
-      delete animations[uid];
-      if(routeLines[uid]){map.removeLayer(routeLines[uid]);delete routeLines[uid];}
-      notify(`${uid} — Sur les lieux`,'ok');
-      changed=true; return;
+// Boucle d'animation à 10 fps
+setInterval(() => {
+  if (!Object.keys(animations).length) return;
+  const units = S.get('units') || [];
+  let changed = false;
+  Object.entries(animations).forEach(([uid, anim]) => {
+    anim.progress += anim.stepSize;
+    while (anim.progress >= 1 && anim.index < anim.pts.length - 1) {
+      anim.progress -= 1; anim.index++;
     }
-    const from=anim.pts[anim.index],to=anim.pts[Math.min(anim.index+1,anim.pts.length-1)];
-    const t=Math.min(anim.progress,1);
-    const newPos=[from[0]+(to[0]-from[0])*t,from[1]+(to[1]-from[1])*t];
-    const u=units.find(x=>x.id===uid);
-    if(u) u.pos=newPos;
-    if(uMarkers[uid]){uMarkers[uid].setLatLng(newPos);uMarkers[uid].setIcon(makeUIcon(u,true));}
-    changed=true;
+    if (anim.index >= anim.pts.length - 1) {
+      const u = units.find(x => x.id === uid);
+      if (u) u.pos = [...anim.pts[anim.pts.length - 1]];
+      delete animations[uid];
+      if (routeLines[uid]) { map.removeLayer(routeLines[uid]); delete routeLines[uid]; }
+      notify(`${uid} — Sur les lieux`, 'ok');
+      changed = true; return;
+    }
+    const from = anim.pts[anim.index];
+    const to   = anim.pts[Math.min(anim.index + 1, anim.pts.length - 1)];
+    const t    = Math.min(anim.progress, 1);
+    const newPos = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t];
+    const u = units.find(x => x.id === uid);
+    if (u) u.pos = newPos;
+    if (uMarkers[uid]) { uMarkers[uid].setLatLng(newPos); uMarkers[uid].setIcon(makeUIcon(u, true)); }
+    changed = true;
   });
-  if(changed){S.set('units',units);updateStats();}
-},100);
+  if (changed) { S.set('units', units); updateStats(); }
+}, 100);
 
 // ── MODALS ──
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-ov').forEach(el=>
-  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');})
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-ov').forEach(el =>
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); })
 );
 
-// ── NOTIFS ──
-function notify(msg,type='info'){
-  const w=document.getElementById('notifs');
-  const n=document.createElement('div');
-  n.className=`notif n-${type}`; n.textContent=msg;
-  w.appendChild(n); setTimeout(()=>n.remove(),5000);
+// ── NOTIFICATIONS ──
+function notify(msg, type = 'info') {
+  const w = document.getElementById('notifs');
+  const n = document.createElement('div');
+  n.className = `notif n-${type}`; n.textContent = msg;
+  w.appendChild(n); setTimeout(() => n.remove(), 5000);
 }
 
-// ── SYNC + BOOT ──
-setInterval(()=>{
-  const ts=parseInt(localStorage.getItem('gtav_ts')||0);
-  if(ts>lastTs){lastTs=ts;renderSidebar();updateStats();}
-},1000);
+// ── SYNC MULTI-ONGLET ──
+setInterval(() => {
+  const ts = parseInt(localStorage.getItem('gtav5_ts') || 0);
+  if (ts > lastTs) { lastTs = ts; renderSidebar(); updateStats(); }
+}, 1000);
 
-window.addEventListener('load',()=>{
-  initData(); initMap(); renderMap();
-  lastTs=parseInt(localStorage.getItem('gtav_ts')||0);
+// ── INIT ──
+window.addEventListener('load', () => {
+  initData();
+  initMap();
+  renderMap();
+  lastTs = parseInt(localStorage.getItem('gtav5_ts') || 0);
+  notify('Dispatch Center actif — Los Santos', 'ok');
 });
 </script>
 </body>
