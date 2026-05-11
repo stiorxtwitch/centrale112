@@ -671,12 +671,12 @@ function goMapNewUnit(){switchPage('carte',document.getElementById('tab-carte'))
 function _startPlacingInc(){
   cancelPlacing();placingMode='incident';
   map.getContainer().classList.add('placing');
-  showBanner('PLACEMENT INCIDENT','Cliquez sur la carte pour positionner l'incident');
+  showBanner('PLACEMENT INCIDENT','Cliquez sur la carte pour positionner l\'incident');
 }
 function _startPlacingUnit(){
   cancelPlacing();placingMode='unit';
   map.getContainer().classList.add('placing');
-  showBanner('PLACEMENT PATROUILLE','Cliquez sur la carte pour positionner l'unité');
+  showBanner('PLACEMENT PATROUILLE','Cliquez sur la carte pour positionner l\'unit\u00e9');
 }
 function showBanner(t,s){
   document.getElementById('banner').classList.add('show');
